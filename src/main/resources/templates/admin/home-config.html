@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>ADMIN PANEL - Konfigurasi Situs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ========== SIDEBAR STYLE ========== */
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            width: 250px;
+            transition: all 0.3s;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+        }
+        .sidebar.collapsed {
+            margin-left: -250px;
+        }
+        .sidebar .nav-link {
+            color: #ecf0f1;
+            padding: 15px 20px;
+            border-bottom: 1px solid #34495e;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #34495e;
+            color: #3498db;
+        }
+        .sidebar .nav-link.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .sidebar .sub-menu {
+            background-color: #34495e;
+            padding-left: 30px;
+        }
+        .sidebar .sub-menu .nav-link {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #2c3e50;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            transition: all 0.3s;
+        }
+        .main-content.expanded {
+            margin-left: 0;
+        }
+        .table-header {
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 5px 5px 0 0;
+        }
+        .table-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn-action {
+            padding: 5px 10px;
+            font-size: 0.875rem;
+        }
+
+        /* ========== TOGGLE MENU STYLE BARU ========== */
+        .menu-toggle-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+            margin-right: 15px;
+        }
+        .menu-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .navbar-title {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .navbar-custom {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            position: relative;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .form-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #34495e;
+        }
+        .sidebar-header h4 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .empty-icon {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+        .image-preview {
+            max-width: 300px;
+            max-height: 200px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .current-image {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .image-preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .delete-image-checkbox {
+            margin-top: 10px;
+        }
+        .sidebar .nav-link.active-parent {
+            background-color: #34495e;
+            color: #ecf0f1;
+        }
+        .sidebar .nav-link.active-parent:hover {
+            color: #3498db;
+        }
+        .sidebar .nav-item.has-submenu .nav-link {
+            cursor: pointer;
+        }
+        .sidebar .nav-item.has-submenu .nav-link[aria-expanded="true"] {
+            background-color: #34495e;
+        }
+        .current-images {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .image-item {
+            margin-bottom: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #f8f9fa;
+        }
+        .image-checkbox {
+            margin-top: 5px;
+        }
+        .gambar-barui-section {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #dee2e6;
+        }
+
+        /* ========== STYLE UNTUK TOMBOL EDIT DI KIRI ========== */
+        .edit-button-container {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 20px;
+        }
+
+        /* ========== SOCIAL MEDIA STYLES ========== */
+        .social-media-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .social-media-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .social-media-badge.facebook {
+            background-color: #1877f2;
+            color: white;
+        }
+        .social-media-badge.instagram {
+            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+            color: white;
+        }
+        .social-media-badge.tiktok {
+            background-color: #000000;
+            color: white;
+        }
+        .social-media-badge i {
+            margin-right: 5px;
+        }
+        .social-media-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .social-media-input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .social-media-input-group .input-group-text {
+            width: 40px;
+            justify-content: center;
+            background-color: #f8f9fa;
+        }
+        .social-media-input-group.facebook .input-group-text {
+            color: #1877f2;
+        }
+        .social-media-input-group.instagram .input-group-text {
+            color: #E1306C;
+        }
+        .social-media-input-group.tiktok .input-group-text {
+            color: #000000;
+        }
+
+        /* ========== RESPONSIVE STYLES ========== */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            .sidebar.collapsed {
+                margin-left: -200px;
+            }
+            .main-content {
+                margin-left: 200px;
+                padding: 15px;
+            }
+            .main-content.expanded {
+                margin-left: 0;
+            }
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+            .btn-action {
+                font-size: 0.75rem;
+                padding: 4px 8px;
+            }
+            .navbar-custom {
+                padding: 8px 15px;
+            }
+            .header-left {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .image-preview {
+                max-width: 100%;
+            }
+            .menu-toggle-btn {
+                font-size: 1.3rem;
+                margin-right: 10px;
+            }
+            .navbar-title {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .social-media-badges {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h4>ADMIN PANEL</h4>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/dashboard}">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/lapangan}">
+                        <i class="fas fa-table me-2"></i>Data Lapangan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/bookings}">
+                        <i class="fas fa-calendar-alt me-2"></i>Data Booking
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/fasilitas}">
+                        <i class="fas fa-list me-2"></i>Data Fasilitas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/ketentuan}">
+                        <i class="fas fa-file-alt me-2"></i>Ketentuan Booking
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="#pembayaranSubmenu" data-bs-toggle="collapse">
+                        <i class="fas fa-credit-card me-2"></i>Pembayaran
+                    </a>
+                    <div class="collapse" id="pembayaranSubmenu">
+                        <ul class="nav flex-column sub-menu">
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/admin/data-pembayaran}">
+                                    <i class="fas fa-money-bill-wave me-2"></i>Data Pembayaran
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/admin/metode-pembayaran}">
+                                    <i class="fas fa-university me-2"></i>Metode Pembayaran
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <!-- Menu Notifikasi -->
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="#notifikasiSubmenu" data-bs-toggle="collapse">
+                        <i class="fas fa-bell me-2"></i>Notifikasi
+                    </a>
+                    <div class="collapse" id="notifikasiSubmenu">
+                        <ul class="nav flex-column sub-menu">
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/admin/email-notification}">
+                                    <i class="fas fa-envelope me-2"></i>Email
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <!-- Menu Konfigurasi Situs -->
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/admin/site-config}">
+                        <i class="fas fa-cog me-2"></i>Konfigurasi Situs
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Header dengan tombol toggle menu -->
+            <div class="navbar-custom d-flex align-items-center">
+                <button class="menu-toggle-btn" id="navbarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="navbar-title">
+                    <h2 class="mb-0">Konfigurasi Situs</h2>
+                </div>
+            </div>
+
+            <!-- Notifikasi -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Tampilkan tombol edit di sebelah kiri jika ada data -->
+            <div th:if="${dataHomePage != null}" class="edit-button-container">
+                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditKonfigurasi">
+                    <i class="fas fa-edit me-2"></i>Edit Konfigurasi
+                </button>
+            </div>
+
+            <!-- Form Container -->
+            <div class="table-container">
+                <!-- Form Header -->
+                <div class="table-header d-flex justify-content-between align-items-center">
+                    <span>Konfigurasi Halaman Utama Website</span>
+                    <div class="d-flex align-items-center">
+                        <span class="me-2" th:if="${dataHomePage != null}">
+                            <i class="fas fa-check-circle me-1"></i>Data sudah dikonfigurasi
+                        </span>
+                        <span class="me-2" th:unless="${dataHomePage != null}">
+                            <i class="fas fa-exclamation-circle me-1"></i>Belum ada data
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Form -->
+                <div class="p-4">
+                    <!-- Tampilkan data jika sudah ada -->
+                    <div th:if="${dataHomePage != null}">
+                        <!-- Card Data Konfigurasi -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-info-circle me-2 text-primary"></i>
+                                    Data Konfigurasi Saat Ini
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <th width="40%">Judul:</th>
+                                                <td th:text="${dataHomePage.title}"></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Alamat:</th>
+                                                <td th:text="${dataHomePage.address}"></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Kontak:</th>
+                                                <td th:text="${dataHomePage.contact}"></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <th width="40%">Jam Operasional:</th>
+                                                <td th:text="${dataHomePage.jamOperasional}"></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Gambar Background:</th>
+                                                <td>
+                                                    <div th:if="${dataHomePage.imageBackground != null}">
+                                                        <img th:src="@{${'/' + #strings.replace(dataHomePage.imageBackground, '\\\\', '/')}}"
+                                                             alt="Background"
+                                                             class="img-thumbnail"
+                                                             style="max-height: 150px;"
+                                                             onerror="this.style.display='none'">
+                                                    </div>
+                                                    <div th:unless="${dataHomePage.imageBackground != null}">
+                                                        <span class="text-muted">Belum ada gambar</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Social Media Section -->
+                                <div class="social-media-section mt-4">
+                                    <h6 class="mb-3"><i class="fas fa-share-alt me-2"></i>Sosial Media</h6>
+                                    <div th:if="${dataHomePage.socialMedia != null}">
+                                        <div class="social-media-badges">
+                                            <div th:if="${dataHomePage.socialMedia.facebook != null and !dataHomePage.socialMedia.facebook.isEmpty()}">
+                                                <span class="social-media-badge facebook">
+                                                    <i class="fab fa-facebook-f"></i> Facebook: @<span th:text="${dataHomePage.socialMedia.facebook}"></span>
+                                                </span>
+                                            </div>
+                                            <div th:if="${dataHomePage.socialMedia.instagram != null and !dataHomePage.socialMedia.instagram.isEmpty()}">
+                                                <span class="social-media-badge instagram">
+                                                    <i class="fab fa-instagram"></i> Instagram: @<span th:text="${dataHomePage.socialMedia.instagram}"></span>
+                                                </span>
+                                            </div>
+                                            <div th:if="${dataHomePage.socialMedia.tiktok != null and !dataHomePage.socialMedia.tiktok.isEmpty()}">
+                                                <span class="social-media-badge tiktok">
+                                                    <i class="fab fa-tiktok"></i> TikTok: @<span th:text="${dataHomePage.socialMedia.tiktok}"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div th:if="${(dataHomePage.socialMedia.facebook == null or dataHomePage.socialMedia.facebook.isEmpty())
+                                                     and (dataHomePage.socialMedia.instagram == null or dataHomePage.socialMedia.instagram.isEmpty())
+                                                     and (dataHomePage.socialMedia.tiktok == null or dataHomePage.socialMedia.tiktok.isEmpty())}">
+                                            <span class="text-muted">Tidak ada sosial media yang diatur</span>
+                                        </div>
+                                    </div>
+                                    <div th:unless="${dataHomePage.socialMedia != null}">
+                                        <span class="text-muted">Tidak ada sosial media yang diatur</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tampilkan tombol tambah jika belum ada data -->
+                    <div th:if="${dataHomePage == null}" class="empty-state">
+                        <i class="fas fa-cog empty-icon"></i>
+                        <h5 class="text-muted">Belum ada konfigurasi situs</h5>
+                        <p class="text-muted">Tambahkan konfigurasi untuk halaman utama website Anda</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahKonfigurasi">
+                            <i class="fas fa-plus me-2"></i>Tambah Konfigurasi
+                        </button>
+                    </div>
+
+                    <!-- Informasi Section -->
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h5><i class="fas fa-info-circle me-2 text-primary"></i>Informasi Konfigurasi Situs</h5>
+                            <ul class="mb-0">
+                                <li>Konfigurasi ini akan ditampilkan di halaman utama website</li>
+                                <li>Data yang dikonfigurasi meliputi:
+                                    <ul>
+                                        <li><strong>Judul:</strong> Judul utama website yang ditampilkan</li>
+                                        <li><strong>Gambar Background:</strong> Gambar latar belakang halaman utama (opsional)</li>
+                                        <li><strong>Alamat:</strong> Alamat lengkap tempat usaha</li>
+                                        <li><strong>Kontak:</strong> Nomor telepon atau kontak yang bisa dihubungi</li>
+                                        <li><strong>Jam Operasional:</strong> Waktu buka dan tutup tempat usaha</li>
+                                        <li><strong>Sosial Media:</strong> Username untuk Facebook, Instagram, dan TikTok (opsional)</li>
+                                    </ul>
+                                </li>
+                                <li>Hanya ada satu konfigurasi situs yang dapat diatur</li>
+                                <li>Untuk sosial media, masukkan username saja (tanpa @ dan URL lengkap)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal Tambah Konfigurasi -->
+<div class="modal fade" id="modalTambahKonfigurasi" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Konfigurasi Situs</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form th:action="@{/admin/site-config/tambah}" method="post" enctype="multipart/form-data" onsubmit="return validateTambahForm()">
+                <div class="modal-body">
+                    <div class="form-section">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Judul Website <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="title" required
+                                   placeholder="Contoh: Lapangan Futsal XYZ">
+                            <div class="invalid-feedback">title tidak boleh kosong</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Gambar Background</label>
+                            <input type="file" class="form-control" name="image" accept="image/*" onchange="previewImage(this, 'tambah-preview')">
+                            <div class="form-text">Upload gambar background untuk halaman utama (opsional)</div>
+                            <div class="image-preview-container mt-2">
+                                <img id="tambah-preview" class="image-preview" style="display:none;">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Alamat <span class="text-danger">*</span></label>
+                            <textarea class="form-control" name="address" rows="3" required
+                                      placeholder="Contoh: Jl. Contoh No. 123, Kota, Provinsi"></textarea>
+                            <div class="invalid-feedback">alamat tidak boleh kosong</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Kontak <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="contact" required
+                                   placeholder="Contoh: 0812-3456-7890">
+                            <div class="invalid-feedback">nomor contact tidak boleh kosong</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Jam Operasional <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="jamOperasional" required
+                                   placeholder="Contoh: Senin-Minggu, 08:00-22:00 WIB">
+                            <div class="invalid-feedback">jam operasional tidak boleh kosong</div>
+                        </div>
+
+                        <!-- Social Media Section -->
+                        <div class="social-media-section">
+                            <h6 class="mb-3"><i class="fas fa-share-alt me-2"></i>Sosial Media (Opsional)</h6>
+
+                            <div class="mb-3">
+                                <div class="social-media-input-group facebook">
+                                    <span class="input-group-text">
+                                        <i class="fab fa-facebook-f"></i>
+                                    </span>
+                                    <input type="text" class="form-control" name="facebook"
+                                           placeholder="Username Facebook (contoh: lapanganfutsalxyz)">
+                                </div>
+                                <div class="form-text ms-4">Masukkan username Facebook tanpa @ dan URL</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="social-media-input-group instagram">
+                                    <span class="input-group-text">
+                                        <i class="fab fa-instagram"></i>
+                                    </span>
+                                    <input type="text" class="form-control" name="instagram"
+                                           placeholder="Username Instagram (contoh: lapanganfutsalxyz)">
+                                </div>
+                                <div class="form-text ms-4">Masukkan username Instagram tanpa @ dan URL</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="social-media-input-group tiktok">
+                                    <span class="input-group-text">
+                                        <i class="fab fa-tiktok"></i>
+                                    </span>
+                                    <input type="text" class="form-control" name="tiktok"
+                                           placeholder="Username TikTok (contoh: lapanganfutsalxyz)">
+                                </div>
+                                <div class="form-text ms-4">Masukkan username TikTok tanpa @ dan URL</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Konfigurasi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Konfigurasi -->
+<div class="modal fade" id="modalEditKonfigurasi" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Konfigurasi Situs</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form th:if="${dataHomePage != null}" id="formEditKonfigurasi" method="post" th:action="@{'/admin/site-config/' + ${dataHomePage.id}}" enctype="multipart/form-data" onsubmit="return validateEditForm()">
+                <div class="modal-body">
+                    <div class="form-section">
+                        <!-- Hidden input untuk method PATCH -->
+                        <input type="hidden" name="_method" value="PATCH">
+                        <!-- Hidden input untuk ID -->
+                        <input type="hidden" name="id" th:value="${dataHomePage.id}">
+
+                        <!-- Container untuk hidden inputs imageBackground -->
+                        <div id="hidden-image-container">
+                            <!-- Akan diisi oleh JavaScript -->
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Judul Website <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="title" th:value="${dataHomePage.title}" required>
+                        </div>
+
+                        <!-- Bagian Gambar -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Kelola Gambar Background</label>
+
+                            <!-- Tampilkan gambar saat ini jika ada -->
+                            <div th:if="${dataHomePage.imageBackground != null}" class="image-item mb-3">
+                                <div class="mb-2">
+                                    <label class="form-label">Gambar Saat Ini</label>
+                                    <div class="d-flex align-items-center">
+                                        <img id="current-site-image"
+                                             th:src="@{${'/' + #strings.replace(dataHomePage.imageBackground, '\\\\', '/')}}"
+                                             class="image-preview"
+                                             onerror="this.style.display='none'">
+                                        <div class="ms-3" id="site-image-info">
+                                            <!-- Info gambar akan ditampilkan di sini -->
+                                        </div>
+                                    </div>
+                                    <div class="form-check image-checkbox">
+                                        <input class="form-check-input" type="checkbox" id="delete-site-image" onchange="toggleSiteImageDelete()">
+                                        <label class="form-check-label" for="delete-site-image">
+                                            Ganti/Hapus gambar ini
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="gambar-barui-section" id="site-gambar-baru-section" style="display: none;">
+                                    <label class="form-label">Ganti dengan Gambar Baru</label>
+                                    <input type="file" class="form-control" name="image" accept="image/*" onchange="handleSiteImageUpload()">
+                                    <div class="form-text">Upload gambar baru untuk mengganti gambar saat ini</div>
+                                </div>
+                            </div>
+
+                            <!-- Jika tidak ada gambar saat ini -->
+                            <div th:unless="${dataHomePage.imageBackground != null}" class="mb-3">
+                                <label class="form-label">Upload Gambar Background (opsional)</label>
+                                <input type="file" class="form-control" name="image" accept="image/*" onchange="previewImage(this, 'edit-preview')">
+                                <div class="form-text">Upload gambar background untuk halaman utama</div>
+                                <div class="image-preview-container mt-2">
+                                    <img id="edit-preview" class="image-preview" style="display:none;">
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Cara kerja edit gambar:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>Centang "Ganti/Hapus gambar ini" untuk menampilkan form upload gambar baru</li>
+                                    <li>Upload gambar baru hanya jika ingin mengganti gambar lama</li>
+                                    <li>Jika tidak centang, gambar lama tetap dipertahankan</li>
+                                    <li>Jika centang dan upload gambar baru, gambar lama akan diganti</li>
+                                    <li>Jika centang tanpa upload, gambar lama akan dihapus</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Alamat <span class="text-danger">*</span></label>
+                            <textarea class="form-control" name="address" rows="3" required th:text="${dataHomePage.address}"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Kontak <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="contact" th:value="${dataHomePage.contact}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Jam Operasional <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="jamOperasional" th:value="${dataHomePage.jamOperasional}" required>
+                        </div>
+
+                        <!-- Social Media Section -->
+                        <div class="social-media-section">
+                            <h6 class="mb-3"><i class="fas fa-share-alt me-2"></i>Sosial Media (Opsional)</h6>
+
+                            <div class="mb-3">
+                                <div class="social-media-input-group facebook">
+                                    <span class="input-group-text">
+                                        <i class="fab fa-facebook-f"></i>
+                                    </span>
+                                    <input type="text" class="form-control" name="facebook"
+                                           th:value="${dataHomePage.socialMedia != null ? dataHomePage.socialMedia.facebook : ''}"
+                                           placeholder="Username Facebook (contoh: lapanganfutsalxyz)">
+                                </div>
+                                <div class="form-text ms-4">Masukkan username Facebook tanpa @ dan URL</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="social-media-input-group instagram">
+                                    <span class="input-group-text">
+                                        <i class="fab fa-instagram"></i>
+                                    </span>
+                                    <input type="text" class="form-control" name="instagram"
+                                           th:value="${dataHomePage.socialMedia != null ? dataHomePage.socialMedia.instagram : ''}"
+                                           placeholder="Username Instagram (contoh: lapanganfutsalxyz)">
+                                </div>
+                                <div class="form-text ms-4">Masukkan username Instagram tanpa @ dan URL</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="social-media-input-group tiktok">
+                                    <span class="input-group-text">
+                                        <i class="fab fa-tiktok"></i>
+                                    </span>
+                                    <input type="text" class="form-control" name="tiktok"
+                                           th:value="${dataHomePage.socialMedia != null ? dataHomePage.socialMedia.tiktok : ''}"
+                                           placeholder="Username TikTok (contoh: lapanganfutsalxyz)">
+                                </div>
+                                <div class="form-text ms-4">Masukkan username TikTok tanpa @ dan URL</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Update Konfigurasi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // ========== TOGGLE SIDEBAR FUNCTION ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        const navbarToggle = document.getElementById('navbarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+
+        // Cek state sidebar dari localStorage
+        const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+
+        if (isSidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+            navbarToggle.querySelector('i').className = 'fas fa-bars';
+        } else {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('expanded');
+            navbarToggle.querySelector('i').className = 'fas fa-times';
+        }
+
+        // Toggle Sidebar dengan animasi
+        navbarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.className = 'fas fa-bars';
+                localStorage.setItem('sidebarCollapsed', 'true');
+            } else {
+                icon.className = 'fas fa-times';
+                localStorage.setItem('sidebarCollapsed', 'false');
+            }
+        });
+
+        // Auto close alert setelah 5 detik
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+
+        // Inisialisasi data gambar saat ini jika ada
+        initCurrentSiteImage();
+    });
+
+    // ========== VARIABEL UNTUK GAMBAR SITUS ==========
+    let currentSiteImagePath = '';
+
+    function initCurrentSiteImage() {
+        // Ambil path gambar saat ini dari Thymeleaf
+        const currentImageElement = document.getElementById('current-site-image');
+        if (currentImageElement && currentImageElement.src) {
+            currentSiteImagePath = document.querySelector('input[name="imageBackground"]')?.value || '';
+
+            // Tampilkan info gambar
+            const infoElement = document.getElementById('site-image-info');
+            if (infoElement && currentSiteImagePath) {
+                const fileName = currentSiteImagePath.split('/').pop() || currentSiteImagePath.split('\\').pop();
+                infoElement.innerHTML = `
+                    <div>
+                        <strong>File:</strong> ${fileName}<br>
+                        <small class="text-muted">Path: ${currentSiteImagePath.substring(0, 30)}...</small>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // ========== FUNGSI TOGGLE DELETE SITE IMAGE ==========
+    function toggleSiteImageDelete() {
+        const checkbox = document.getElementById('delete-site-image');
+        const sectionBaru = document.getElementById('site-gambar-baru-section');
+        const hiddenContainer = document.getElementById('hidden-image-container');
+
+        if (checkbox.checked) {
+            // Tampilkan section untuk upload gambar baru
+            sectionBaru.style.display = 'block';
+
+            // Buat hidden input untuk imageBackground dengan path gambar lama
+            hiddenContainer.innerHTML = '';
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'imageBackground';
+            hiddenInput.value = currentSiteImagePath;
+            hiddenContainer.appendChild(hiddenInput);
+        } else {
+            // Sembunyikan section untuk upload gambar baru
+            sectionBaru.style.display = 'none';
+
+            // Reset file input
+            const fileInput = sectionBaru.querySelector('input[type="file"]');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+
+            // Hapus hidden input untuk imageBackground
+            hiddenContainer.innerHTML = '';
+
+            // Reset preview ke gambar lama
+            const currentImageElement = document.getElementById('current-site-image');
+            if (currentImageElement && currentSiteImagePath) {
+                currentImageElement.style.display = 'block';
+                currentImageElement.src = '/' + currentSiteImagePath.replace(/\\\\/g, '/');
+
+                const infoElement = document.getElementById('site-image-info');
+                if (infoElement) {
+                    const fileName = currentSiteImagePath.split('/').pop() || currentSiteImagePath.split('\\').pop();
+                    infoElement.innerHTML = `
+                        <div>
+                            <strong>File:</strong> ${fileName}<br>
+                            <small class="text-muted">Path: ${currentSiteImagePath.substring(0, 30)}...</small>
+                        </div>
+                    `;
+                }
+            }
+        }
+    }
+
+    function handleSiteImageUpload() {
+        const fileInput = document.querySelector('#site-gambar-baru-section input[type="file"]');
+
+        if (fileInput.files.length > 0) {
+            // Preview gambar baru
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgElement = document.getElementById('current-site-image');
+                imgElement.src = e.target.result;
+                imgElement.style.display = 'block';
+
+                const infoElement = document.getElementById('site-image-info');
+                infoElement.innerHTML = `
+                    <div>
+                        <strong>File baru:</strong> ${file.name}<br>
+                        <small class="text-success">Gambar baru siap diupload</small>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            // Jika file dihapus, kembalikan preview ke gambar lama
+            if (currentSiteImagePath) {
+                const imgElement = document.getElementById('current-site-image');
+                imgElement.src = '/' + currentSiteImagePath.replace(/\\\\/g, '/');
+                imgElement.style.display = 'block';
+
+                const fileName = currentSiteImagePath.split('/').pop() || currentSiteImagePath.split('\\').pop();
+                const infoElement = document.getElementById('site-image-info');
+                infoElement.innerHTML = `
+                    <div>
+                        <strong>File:</strong> ${fileName}<br>
+                        <small class="text-muted">Path: ${currentSiteImagePath.substring(0, 30)}...</small>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // ========== FUNGSI VALIDASI FORM ==========
+    function validateTambahForm() {
+        let isValid = true;
+        const form = document.querySelector('#modalTambahKonfigurasi form');
+        const requiredFields = form.querySelectorAll('input[required], textarea[required]');
+
+        requiredFields.forEach(field => {
+            if (field.value.trim() === '') {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+
+        if (!isValid) {
+            alert('Mohon lengkapi semua field yang wajib diisi!');
+        }
+
+        return isValid;
+    }
+
+    function validateEditForm() {
+        let isValid = true;
+        const form = document.getElementById('formEditKonfigurasi');
+        const requiredFields = form.querySelectorAll('input[required], textarea[required]');
+
+        requiredFields.forEach(field => {
+            if (field.value.trim() === '') {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+
+        if (!isValid) {
+            alert('Mohon lengkapi semua field yang wajib diisi!');
+        }
+
+        return isValid;
+    }
+
+    // ========== FUNGSI PREVIEW GAMBAR ==========
+    function previewImage(input, previewId) {
+        const preview = document.getElementById(previewId);
+        const file = input.files[0];
+
+        if (file) {
+            // Validasi ukuran file (maks 5MB untuk gambar background)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Ukuran file maksimal 5MB!');
+                input.value = '';
+                preview.style.display = 'none';
+                return;
+            }
+
+            // Validasi tipe file
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+            if (!validTypes.includes(file.type)) {
+                alert('Format file harus JPG, PNG, GIF, WebP, atau SVG!');
+                input.value = '';
+                preview.style.display = 'none';
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    // ========== RESET FORM TAMBAH ==========
+    document.getElementById('modalTambahKonfigurasi').addEventListener('hidden.bs.modal', function () {
+        // Reset form
+        const form = this.querySelector('form');
+        form.reset();
+
+        // Hapus preview gambar
+        const preview = document.getElementById('tambah-preview');
+        preview.style.display = 'none';
+        preview.src = '';
+
+        // Hapus class validasi
+        const inputs = form.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+            input.classList.remove('is-valid', 'is-invalid');
+        });
+    });
+
+    // ========== RESET FORM EDIT ==========
+    document.getElementById('modalEditKonfigurasi').addEventListener('hidden.bs.modal', function () {
+        // Reset checkbox delete image
+        const checkbox = document.getElementById('delete-site-image');
+        if (checkbox) {
+            checkbox.checked = false;
+        }
+
+        // Sembunyikan section upload baru
+        const sectionBaru = document.getElementById('site-gambar-baru-section');
+        if (sectionBaru) {
+            sectionBaru.style.display = 'none';
+        }
+
+        // Reset input file
+        const fileInput = sectionBaru?.querySelector('input[type="file"]');
+        if (fileInput) {
+            fileInput.value = '';
+        }
+
+        // Reset hidden container
+        const hiddenContainer = document.getElementById('hidden-image-container');
+        if (hiddenContainer) {
+            hiddenContainer.innerHTML = '';
+        }
+
+        // Kembalikan preview ke gambar lama
+        const currentImageElement = document.getElementById('current-site-image');
+        if (currentImageElement && currentSiteImagePath) {
+            currentImageElement.src = '/' + currentSiteImagePath.replace(/\\\\/g, '/');
+            currentImageElement.style.display = 'block';
+
+            const infoElement = document.getElementById('site-image-info');
+            if (infoElement) {
+                const fileName = currentSiteImagePath.split('/').pop() || currentSiteImagePath.split('\\').pop();
+                infoElement.innerHTML = `
+                    <div>
+                        <strong>File:</strong> ${fileName}<br>
+                        <small class="text-muted">Path: ${currentSiteImagePath.substring(0, 30)}...</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Reset class validasi
+        const form = document.getElementById('formEditKonfigurasi');
+        if (form) {
+            const inputs = form.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                input.classList.remove('is-valid', 'is-invalid');
+            });
+        }
+    });
+
+    // ========== INISIALISASI SAAT MODAL EDIT DIBUKA ==========
+    document.getElementById('modalEditKonfigurasi').addEventListener('show.bs.modal', function () {
+        // Reset form edit terlebih dahulu
+        const checkbox = document.getElementById('delete-site-image');
+        const sectionBaru = document.getElementById('site-gambar-baru-section');
+        const hiddenContainer = document.getElementById('hidden-image-container');
+
+        if (checkbox) checkbox.checked = false;
+        if (sectionBaru) sectionBaru.style.display = 'none';
+        if (hiddenContainer) hiddenContainer.innerHTML = '';
+
+        // Inisialisasi ulang currentSiteImagePath
+        currentSiteImagePath = document.querySelector('input[name="imageBackground"]')?.value || '';
+
+        // Tampilkan info gambar saat ini
+        const infoElement = document.getElementById('site-image-info');
+        const currentImageElement = document.getElementById('current-site-image');
+
+        if (currentSiteImagePath && infoElement && currentImageElement) {
+            const fileName = currentSiteImagePath.split('/').pop() || currentSiteImagePath.split('\\').pop();
+            infoElement.innerHTML = `
+                <div>
+                    <strong>File:</strong> ${fileName}<br>
+                    <small class="text-muted">Path: ${currentSiteImagePath.substring(0, 30)}...</small>
+                </div>
+            `;
+
+            // Pastikan gambar ditampilkan
+            currentImageElement.style.display = 'block';
+            currentImageElement.onerror = function() {
+                this.style.display = 'none';
+                infoElement.innerHTML = `<span class="text-muted">Gambar tidak dapat ditampilkan</span>`;
+            };
+        }
+    });
+</script>
+</body>
+</html>

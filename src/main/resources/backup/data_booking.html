@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>ADMIN PANEL - Data Booking</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        /* ========== SIDEBAR STYLE ========== */
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            width: 250px;
+            transition: all 0.3s;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+        }
+        .sidebar.collapsed {
+            margin-left: -250px;
+        }
+        .sidebar .nav-link {
+            color: #ecf0f1;
+            padding: 15px 20px;
+            border-bottom: 1px solid #34495e;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #34495e;
+            color: #3498db;
+        }
+        .sidebar .nav-link.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .sidebar .sub-menu {
+            background-color: #34495e;
+            padding-left: 30px;
+        }
+        .sidebar .sub-menu .nav-link {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #2c3e50;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            transition: all 0.3s;
+        }
+        .main-content.expanded {
+            margin-left: 0;
+        }
+        .table-header {
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 5px 5px 0 0;
+        }
+        .table-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn-action {
+            padding: 5px 10px;
+            font-size: 0.875rem;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+        }
+        .toggle-sidebar {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: #3498db;
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .toggle-sidebar:hover {
+            background: #2980b9;
+        }
+        .navbar-custom {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .compact-table td, .compact-table th {
+            padding: 8px 12px;
+        }
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-actions-left {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            justify-content: flex-start;
+            margin-top: 10px;
+        }
+        .detail-info-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .detail-info-item:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 120px;
+        }
+        .info-value {
+            color: #6c757d;
+        }
+        .lapangan-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+        }
+        .lapangan-card h6 {
+            color: #495057;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+            background-color: #f8f9fa;
+        }
+        .page-info {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .form-text-small {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 3px;
+        }
+        .status-section {
+            margin-bottom: 10px;
+        }
+        .status-section:last-child {
+            margin-bottom: 0;
+        }
+        .filter-title {
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        .search-summary {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .search-summary-item {
+            margin-right: 20px;
+            display: inline-block;
+        }
+        .search-summary-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .search-summary-value {
+            color: #3498db;
+        }
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #34495e;
+        }
+        .sidebar-header h4 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* ========== DELETE MODAL STYLE ========== */
+        .delete-modal-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        .delete-modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #dc3545;
+        }
+        .delete-modal-message {
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        .delete-modal-footer {
+            border-top: none;
+            padding-top: 0;
+        }
+
+        /* ========== RESPONSIVE STYLES ========== */
+        @media (max-width: 1200px) {
+            .filter-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            .sidebar.collapsed {
+                margin-left: -200px;
+            }
+            .main-content {
+                margin-left: 200px;
+                padding: 15px;
+            }
+            .main-content.expanded {
+                margin-left: 0;
+            }
+            .toggle-sidebar {
+                top: 10px;
+                left: 10px;
+            }
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-actions-left {
+                flex-direction: column;
+            }
+            .search-summary-item {
+                display: block;
+                margin-bottom: 5px;
+            }
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+            .btn-action {
+                font-size: 0.75rem;
+                padding: 4px 8px;
+            }
+            .navbar-custom {
+                padding: 8px 15px;
+            }
+            .header-left {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .delete-modal-icon {
+                font-size: 2.5rem;
+            }
+            .delete-modal-title {
+                font-size: 1.25rem;
+            }
+        }
+        @media (max-width: 576px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+            .sidebar.collapsed {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .toggle-sidebar {
+                display: block;
+            }
+            .modal-dialog {
+                margin: 10px;
+            }
+            .delete-modal .modal-dialog {
+                max-width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Toggle Sidebar Button -->
+<button class="toggle-sidebar" id="sidebarToggle">
+    <i class="fas fa-bars"></i>
+</button>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h4>ADMIN PANEL</h4>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/dashboard}">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/lapangan}">
+                        <i class="fas fa-table me-2"></i>Data Lapangan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/admin/bookings}">
+                        <i class="fas fa-calendar-alt me-2"></i>Data Booking
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/fasilitas}">
+                        <i class="fas fa-list me-2"></i>Data Fasilitas
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/ketentuan}">
+                        <i class="fas fa-file-alt me-2"></i>Ketentuan Booking
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#pembayaranSubmenu" data-bs-toggle="collapse">
+                        <i class="fas fa-credit-card me-2"></i>Pembayaran
+                    </a>
+                    <div class="collapse" id="pembayaranSubmenu">
+                        <ul class="nav flex-column sub-menu">
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/admin/data-pembayaran}">
+                                    <i class="fas fa-money-bill-wave me-2"></i>Data Pembayaran
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/admin/metode-pembayaran}">
+                                    <i class="fas fa-university me-2"></i>Metode Pembayaran
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="#notifikasiSubmenu" data-bs-toggle="collapse">
+                        <i class="fas fa-bell me-2"></i>Notifikasi
+                    </a>
+                    <div class="collapse" id="notifikasiSubmenu">
+                        <ul class="nav flex-column sub-menu">
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/admin/email-notification}">
+                                    <i class="fas fa-envelope me-2"></i>Email
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/site-config}">
+                        <i class="fas fa-cog me-2"></i>Konfigurasi Situs
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Header -->
+            <div class="navbar-custom d-flex justify-content-between align-items-center">
+                <div class="header-left">
+                    <h2 class="mb-0">Data Booking</h2>
+                </div>
+                <div class="page-info">
+                    <!-- FIXED: Null-safe expression -->
+                    <span th:if="${dataPagingBooking != null and dataPagingBooking.metadata != null}"
+                          th:text="'Total: ' + ${dataPagingBooking.metadata.totalElements} + ' data'">
+                    </span>
+                    <span th:if="${dataPagingBooking == null or dataPagingBooking.metadata == null}">
+                        Total: 0 data
+                    </span>
+                </div>
+            </div>
+
+            <!-- Ringkasan Pencarian -->
+            <div th:if="${param['id-booking'] != null or param['field-name'] != null or param.username != null or
+                          param['status-booking'] != null or param['status-pembayaran'] != null or param.date != null}"
+                 class="search-summary">
+                <div class="search-summary-item">
+                    <span class="search-summary-label">Filter Aktif:</span>
+                </div>
+                <div class="search-summary-item" th:if="${param['id-booking'] != null}">
+                    <span class="search-summary-label">ID Booking:</span>
+                    <span class="search-summary-value" th:text="${param['id-booking']}"></span>
+                </div>
+                <div class="search-summary-item" th:if="${param['field-name'] != null and param['field-name'] != ''}">
+                    <span class="search-summary-label">Nama Lapangan:</span>
+                    <span class="search-summary-value" th:text="${param['field-name']}"></span>
+                </div>
+                <div class="search-summary-item" th:if="${param.username != null and param.username != ''}">
+                    <span class="search-summary-label">Pelanggan:</span>
+                    <span class="search-summary-value" th:text="${param.username}"></span>
+                </div>
+                <div class="search-summary-item" th:if="${param.date != null}">
+                    <span class="search-summary-label">Tanggal:</span>
+                    <span class="search-summary-value" th:text="${param.date}"></span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary float-end" onclick="resetFilter()">
+                    <i class="fas fa-times me-1"></i>Hapus Filter
+                </button>
+            </div>
+
+            <!-- Filter Section - TOMBOL DI SEBELAH KIRI -->
+            <div class="filter-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="filter-title mb-0">
+                        <i class="fas fa-filter me-2"></i>Filter Booking
+                    </h5>
+                </div>
+
+                <form th:action="@{/admin/bookings}" method="get" id="filterForm" onsubmit="return handleFilterSubmit()">
+                    <div class="filter-grid">
+                        <!-- ID Booking (OPTIONAL) -->
+                        <div class="filter-item">
+                            <label class="form-label fw-bold">ID Booking</label>
+                            <input type="number"
+                                   class="form-control"
+                                   name="id-booking"
+                                   id="id-booking-input"
+                                   th:value="${param['id-booking']}"
+                                   min="1"
+                                   placeholder="Cari berdasarkan ID Booking">
+                            <div class="form-text-small">Kosongkan untuk semua booking</div>
+                        </div>
+
+                        <!-- NAMA LAPANGAN (DROPDOWN) -->
+                        <div class="filter-item">
+                            <label class="form-label fw-bold">Nama Lapangan</label>
+                            <select class="form-select" name="field-name" id="field-name-select">
+                                <option value="">Semua Lapangan</option>
+                                <option th:each="fieldName : ${fieldNames}"
+                                        th:value="${fieldName}"
+                                        th:text="${fieldName}"
+                                        th:selected="${param['field-name'] == fieldName}">
+                                </option>
+                            </select>
+                            <div class="form-text-small">Pilih nama lapangan</div>
+                        </div>
+
+                        <!-- Nama Pelanggan -->
+                        <div class="filter-item">
+                            <label class="form-label fw-bold">Nama Pelanggan</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="username"
+                                   id="username-input"
+                                   th:value="${param.username}"
+                                   placeholder="Cari nama pelanggan"
+                                   onblur="trimUsername(this)">
+                            <div class="form-text-small">Kosongkan untuk semua pelanggan</div>
+                        </div>
+
+                        <!-- Status Booking -->
+                        <div class="filter-item">
+                            <label class="form-label fw-bold">Status Booking</label>
+                            <select class="form-select" name="status-booking" id="status-booking-select">
+                                <option value="">Semua Status Booking</option>
+                                <option th:each="status : ${statusBooking}"
+                                        th:value="${status}"
+                                        th:text="${#strings.capitalize(#strings.replace(status.toString(), '_', ' ').toLowerCase())}"
+                                        th:selected="${param['status-booking'] == status}">
+                                </option>
+                            </select>
+                            <div class="form-text-small">Pilih status booking</div>
+                        </div>
+
+                        <!-- Status Pembayaran -->
+                        <div class="filter-item">
+                            <label class="form-label fw-bold">Status Pembayaran</label>
+                            <select class="form-select" name="status-pembayaran" id="status-pembayaran-select">
+                                <option value="">Semua Status Pembayaran</option>
+                                <option th:each="status : ${statusPembayaran}"
+                                        th:value="${status}"
+                                        th:text="${#strings.capitalize(#strings.replace(status.toString(), '_', ' ').toLowerCase())}"
+                                        th:selected="${param['status-pembayaran'] == status}">
+                                </option>
+                            </select>
+                            <div class="form-text-small">Pilih status pembayaran</div>
+                        </div>
+
+                        <!-- Tanggal Booking -->
+                        <div class="filter-item">
+                            <label class="form-label fw-bold">Tanggal Booking</label>
+                            <input type="date"
+                                   class="form-control"
+                                   name="date"
+                                   id="date-input"
+                                   th:value="${param.date}">
+                            <div class="form-text-small">Format: YYYY-MM-DD</div>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Aksi di sebelah kiri -->
+                    <div class="filter-actions-left">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Cari
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="resetFilter()">
+                            <i class="fas fa-redo me-2"></i>Reset
+                        </button>
+                    </div>
+
+                    <input type="hidden" name="page" id="pageInput" th:value="${param.page != null ? param.page : 0}">
+                </form>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-container">
+                <!-- Table Header -->
+                <div class="table-header d-flex justify-content-between align-items-center">
+                    <span>Daftar Booking</span>
+                    <div class="d-flex align-items-center">
+                        <span class="me-2">Menampilkan data booking</span>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 compact-table">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>No</th>
+                            <th>ID Booking</th>
+                            <th>Pelanggan</th>
+                            <th>Waktu</th>
+                            <th>Lapangan</th>
+                            <th>Harga</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- FIXED: Null-safe expression untuk iterasi -->
+                        <tr th:if="${dataPagingBooking != null and dataPagingBooking.content != null}"
+                            th:each="booking, stat : ${dataPagingBooking.content}">
+                            <!-- FIXED: Null-safe calculation -->
+                            <td th:text="${stat.index + 1 + (dataPagingBooking.metadata.number * dataPagingBooking.metadata.size)}"></td>
+                            <td>
+                                <strong th:text="${booking.id}"></strong>
+                            </td>
+                            <td>
+                                <strong th:text="${booking.username}"></strong><br>
+                                <small class="text-muted" th:text="${booking.handphone}"></small>
+                            </td>
+                            <td>
+                                <strong th:text="${#temporals.format(booking.waktuMulai, 'dd/MM/yyyy HH:mm')}"></strong><br>
+                                <small class="text-muted" th:text="${#temporals.format(booking.waktuSelesai, 'dd/MM/yyyy HH:mm')}"></small>
+                            </td>
+                            <td>
+                                <span th:text="${booking.lapangan.namaLapangan}"></span><br>
+                                <small class="text-muted" th:text="${booking.lapangan.jenisLapangan}"></small>
+                            </td>
+                            <td>
+                                <strong th:text="'Rp ' + ${#numbers.formatInteger(booking.harga != null ? booking.harga.intValue() : 0, 0, 'COMMA')}"></strong>
+                            </td>
+                            <td>
+                                <div class="status-section">
+                                    <!-- Status Booking Badge -->
+                                    <div th:switch="${booking.statusBooking?.toString()}">
+                                        <span th:case="'MENUNGGU'" class="badge bg-warning status-badge">Menunggu</span>
+                                        <span th:case="'SEDANG_BERLANGSUNG'" class="badge bg-info status-badge">Sedang Berlangsung</span>
+                                        <span th:case="'SELESAI'" class="badge bg-success status-badge">Selesai</span>
+                                        <span th:case="'BATAL'" class="badge bg-danger status-badge">Batal</span>
+                                        <span th:case="*" class="badge bg-secondary status-badge" th:text="${booking.statusBooking}"></span>
+                                    </div>
+                                    <!-- Status Pembayaran Badge -->
+                                    <div class="status-section">
+                                        <div th:switch="${booking.statusPembayaran?.toString()}">
+                                            <span th:case="'SUDAH_BAYAR'" class="badge bg-success status-badge">Sudah Bayar</span>
+                                            <span th:case="'BELUM_BAYAR'" class="badge bg-danger status-badge">Belum Bayar</span>
+                                            <span th:case="*" class="badge bg-secondary status-badge" th:text="${booking.statusPembayaran}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1 flex-wrap">
+                                    <!-- Tombol Detail -->
+                                    <button type="button"
+                                            class="btn btn-info btn-sm btn-action"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalDetail"
+                                            th:attr="data-id=${booking.id},
+                                                     data-username=${booking.username},
+                                                     data-handphone=${booking.handphone},
+                                                     data-waktu-mulai=${booking.waktuMulai},
+                                                     data-waktu-selesai=${booking.waktuSelesai},
+                                                     data-harga=${booking.harga != null ? booking.harga.intValue() : 0},
+                                                     data-lapangan-nama=${booking.lapangan.namaLapangan},
+                                                     data-lapangan-jenis=${booking.lapangan.jenisLapangan},
+                                                     data-lapangan-harga=${booking.lapangan.hargaLapanganPerjam},
+                                                     data-lapangan-lokasi=${booking.lapangan.lokasi},
+                                                     data-lapangan-deskripsi=${booking.lapangan.deskripsi},
+                                                     data-lapangan-tanggal-beroperasi=${booking.lapangan.tanggalBeroperasi}"
+                                            onclick="openDetailModal(this)">
+                                        <i class="fas fa-eye me-1"></i>Detail
+                                    </button>
+
+                                    <!-- Tombol Edit -->
+                                    <button type="button"
+                                            class="btn btn-warning btn-sm btn-action"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalEdit"
+                                            th:attr="data-id=${booking.id},
+                                                     data-username=${booking.username},
+                                                     data-handphone=${booking.handphone},
+                                                     data-waktu-mulai=${booking.waktuMulai},
+                                                     data-waktu-selesai=${booking.waktuSelesai},
+                                                     data-harga=${booking.harga != null ? booking.harga.intValue() : 0},
+                                                     data-status-booking=${booking.statusBooking?.toString()},
+                                                     data-status-pembayaran=${booking.statusPembayaran?.toString()},
+                                                     data-id-field=${booking.lapangan.id},
+                                                     data-lapangan-tanggal-beroperasi=${booking.lapangan.tanggalBeroperasi}"
+                                            onclick="openEditModal(this)">
+                                        <i class="fas fa-edit me-1"></i>Edit
+                                    </button>
+
+                                    <!-- Tombol Hapus - PERBAIKAN: Tambahkan data-field-id -->
+                                    <button type="button"
+                                            class="btn btn-danger btn-sm btn-action"
+                                            th:attr="data-id=${booking.id},
+                                                     data-username=${booking.username},
+                                                     data-field-id=${booking.lapangan.id}"
+                                            onclick="showDeleteModal(this)">
+                                        <i class="fas fa-trash me-1"></i>Hapus
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Jika tidak ada data atau dataPagingBooking null -->
+                        <tr th:if="${dataPagingBooking == null or dataPagingBooking.content == null or dataPagingBooking.content.isEmpty()}">
+                            <td colspan="8" class="text-center py-4">
+                                <i class="fas fa-calendar-times fa-2x text-muted mb-3"></i>
+                                <p class="text-muted">
+                                    <span th:if="${param['id-booking'] != null or param['field-name'] != null or param.username != null or
+                                                   param['status-booking'] != null or param['status-pembayaran'] != null or param.date != null}">
+                                        Tidak ada data booking yang ditemukan dengan filter yang dipilih
+                                    </span>
+                                    <span th:if="${param['id-booking'] == null and param['field-name'] == null and param.username == null and
+                                                   param['status-booking'] == null and param['status-pembayaran'] == null and param.date == null}">
+                                        Tidak ada data booking yang tersedia
+                                    </span>
+                                </p>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button onclick="resetFilter()" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-redo me-1"></i>Reset Filter
+                                    </button>
+                                    <a th:href="@{/admin/bookings}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-list me-1"></i>Tampilkan Semua Booking
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <!-- FIXED: Null-safe expression dan tanpa Math.min() -->
+                <div th:if="${dataPagingBooking != null and dataPagingBooking.metadata != null and dataPagingBooking.metadata.totalPages > 0}"
+                     class="pagination-container">
+                    <div class="page-info">
+                        Menampilkan
+                        <span th:text="${(dataPagingBooking.metadata.number * dataPagingBooking.metadata.size) + 1}"></span>-
+                        <!-- FIXED: Simplified calculation tanpa Math.min() -->
+                        <span th:text="${(dataPagingBooking.metadata.number + 1) * dataPagingBooking.metadata.size <= dataPagingBooking.metadata.totalElements ?
+                                        (dataPagingBooking.metadata.number + 1) * dataPagingBooking.metadata.size :
+                                        dataPagingBooking.metadata.totalElements}">
+                        </span>
+                        dari <span th:text="${dataPagingBooking.metadata.totalElements}"></span> data
+                    </div>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+                            <!-- First Page -->
+                            <li class="page-item" th:classappend="${dataPagingBooking.metadata.number == 0} ? 'disabled' : ''">
+                                <a class="page-link" href="#" th:onclick="|changePage(0)|">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <!-- Previous Page -->
+                            <li class="page-item" th:classappend="${dataPagingBooking.metadata.number == 0} ? 'disabled' : ''">
+                                <a class="page-link" href="#" th:onclick="|changePage(${dataPagingBooking.metadata.number - 1})|">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                            <!-- Page Numbers - simplified version -->
+                            <li th:each="i : ${#numbers.sequence(0, dataPagingBooking.metadata.totalPages - 1)}"
+                                class="page-item"
+                                th:classappend="${i == dataPagingBooking.metadata.number} ? 'active' : ''">
+                                <a class="page-link" href="#" th:onclick="|changePage(${i})|" th:text="${i + 1}"></a>
+                            </li>
+                            <!-- Next Page -->
+                            <li class="page-item" th:classappend="${dataPagingBooking.metadata.number == dataPagingBooking.metadata.totalPages - 1} ? 'disabled' : ''">
+                                <a class="page-link" href="#" th:onclick="|changePage(${dataPagingBooking.metadata.number + 1})|">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <!-- Last Page -->
+                            <li class="page-item" th:classappend="${dataPagingBooking.metadata.number == dataPagingBooking.metadata.totalPages - 1} ? 'disabled' : ''">
+                                <a class="page-link" href="#" th:onclick="|changePage(${dataPagingBooking.metadata.totalPages - 1})|">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- ====================== MODAL DETAIL ====================== -->
+<div class="modal fade" id="modalDetail" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle me-2"></i>Detail Booking
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Kolom Kiri: Informasi Booking -->
+                    <div class="col-md-6">
+                        <h6 class="border-bottom pb-2 mb-3">
+                            <i class="fas fa-calendar-alt me-2"></i>Informasi Booking
+                        </h6>
+                        <div class="detail-info-item">
+                            <div class="d-flex">
+                                <span class="info-label">ID Booking:</span>
+                                <span class="info-value ms-2" id="detail-id">-</span>
+                            </div>
+                        </div>
+                        <div class="detail-info-item">
+                            <div class="d-flex">
+                                <span class="info-label">Nama:</span>
+                                <span class="info-value ms-2 fw-bold" id="detail-username">-</span>
+                            </div>
+                        </div>
+                        <div class="detail-info-item">
+                            <div class="d-flex">
+                                <span class="info-label">Handphone:</span>
+                                <span class="info-value ms-2" id="detail-handphone">-</span>
+                            </div>
+                        </div>
+                        <div class="detail-info-item">
+                            <div class="d-flex">
+                                <span class="info-label">Waktu Mulai:</span>
+                                <span class="info-value ms-2" id="detail-waktu-mulai">-</span>
+                            </div>
+                        </div>
+                        <div class="detail-info-item">
+                            <div class="d-flex">
+                                <span class="info-label">Waktu Selesai:</span>
+                                <span class="info-value ms-2" id="detail-waktu-selesai">-</span>
+                            </div>
+                        </div>
+                        <div class="detail-info-item">
+                            <div class="d-flex">
+                                <span class="info-label">Total Harga:</span>
+                                <span class="info-value ms-2 fw-bold text-success" id="detail-harga">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kolom Kanan: Informasi Lapangan -->
+                    <div class="col-md-6">
+                        <h6 class="border-bottom pb-2 mb-3 mt-4">
+                            <i class="fas fa-map-marker-alt me-2"></i>Informasi Lapangan
+                        </h6>
+                        <div class="detail-info-item">
+                            <div class="d-flex">
+                                <span class="info-label">Nama:</span>
+                                <span class="info-value ms-2 fw-bold" id="detail-lapangan-nama">-</span>
+                            </div>
+                        </div>
+                        <div class="detail-info-item">
+                            <div class="d-flex">
+                                <span class="info-label">Jenis:</span>
+                                <span class="info-value ms-2" id="detail-lapangan-jenis">-</span>
+                            </div>
+                        </div>
+                        <div class="detail-info-item">
+                            <div class="d-flex">
+                                <span class="info-label">Lokasi:</span>
+                                <span class="info-value ms-2" id="detail-lapangan-lokasi">-</span>
+                            </div>
+                        </div>
+                        <div class="detail-info-item">
+                            <div class="d-flex">
+                                <span class="info-label">Harga/Jam:</span>
+                                <span class="info-value ms-2" id="detail-lapangan-harga">-</span>
+                            </div>
+                        </div>
+                        <div class="detail-info-item">
+                            <div class="d-flex">
+                                <span class="info-label">Beroperasi Sampai:</span>
+                                <span class="info-value ms-2" id="detail-lapangan-tanggal-beroperasi">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deskripsi Lapangan -->
+                <div class="mt-4">
+                    <h6 class="border-bottom pb-2">
+                        <i class="fas fa-align-left me-2"></i>Deskripsi Lapangan
+                    </h6>
+                    <div class="lapangan-card">
+                        <p class="mb-0" id="detail-lapangan-deskripsi">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====================== MODAL EDIT ====================== -->
+<div class="modal fade" id="modalEdit" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Edit Booking
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- FIXED: Menggunakan POST dengan _method=PATCH -->
+            <form th:action="@{/admin/bookings}" method="post" id="editForm">
+                <input type="hidden" name="_method" value="PATCH">
+                <div class="modal-body">
+                    <input type="hidden" name="idBooking" id="edit-id">
+                    <input type="hidden" name="idField" id="edit-id-field">
+                    <input type="hidden" name="lapanganTanggalBeroperasi" id="edit-lapangan-tanggal-beroperasi">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nama Pelanggan <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="username" id="edit-username" required>
+                        <div class="form-text-small">Nama lengkap pelanggan</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nomor Handphone <span class="text-danger">*</span></label>
+                        <input type="tel" class="form-control" name="handPhone" id="edit-handphone" required>
+                        <div class="form-text-small">Format: 08xxxxxxxxxx</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Waktu Mulai <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" name="waktuMulai" id="edit-waktu-mulai" required>
+                            <div class="form-text-small" id="tanggal-beroperasi-info"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Waktu Selesai <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" name="waktuSelesai" id="edit-waktu-selesai" required>
+                            <div class="form-text-small">Tidak boleh melebihi tanggal beroperasi lapangan</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Status Booking <span class="text-danger">*</span></label>
+                            <select class="form-select" name="statusBoking" id="edit-status-booking" required>
+                                <option value="">-- Pilih Status --</option>
+                                <option th:each="status : ${statusBooking}"
+                                        th:value="${status}"
+                                        th:text="${#strings.capitalize(#strings.replace(status.toString(), '_', ' ').toLowerCase())}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Status Pembayaran <span class="text-danger">*</span></label>
+                            <select class="form-select" name="statusPembayaran" id="edit-status-pembayaran" required>
+                                <option value="">-- Pilih Status --</option>
+                                <option th:each="status : ${statusPembayaran}"
+                                        th:value="${status}"
+                                        th:text="${#strings.capitalize(#strings.replace(status.toString(), '_', ' ').toLowerCase())}">
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Perhatian:</strong> Booking tidak boleh melebihi tanggal beroperasi lapangan.
+                        Validasi akhir dilakukan di server.
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Simpan Perubahan
+                    </button>
+                </div>
+
+                <!-- Tambahkan di dalam form edit, setelah input lainnya -->
+                <input type="hidden" name="waktuMulai" id="edit-waktu-mulai-hidden">
+                <input type="hidden" name="waktuSelesai" id="edit-waktu-selesai-hidden">
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ====================== MODAL KONFIRMASI HAPUS ====================== -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div class="delete-modal-icon text-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h5 class="delete-modal-title">Konfirmasi Hapus</h5>
+                <p class="delete-modal-message" id="delete-message">
+                    Apakah Anda yakin ingin menghapus booking <strong id="delete-item-name"></strong>?
+                </p>
+                <p class="text-muted small mb-4">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Data yang telah dihapus tidak dapat dikembalikan.
+                </p>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <button type="button" class="btn btn-success px-4" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Cancel
+                    </button>
+                    <form id="delete-form" method="post" th:action="@{/admin/bookings}" style="display: inline;">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="booking-id" id="delete-booking-id">
+                        <input type="hidden" name="field-id" id="delete-field-id">
+                        <button type="submit" class="btn btn-danger px-4">
+                            <i class="fas fa-check me-1"></i> OK
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    // ========== TOGGLE SIDEBAR FUNCTION ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+
+        // Cek state sidebar dari localStorage
+        const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+
+        if (isSidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+            sidebarToggle.querySelector('i').className = 'fas fa-bars';
+        } else {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('expanded');
+            sidebarToggle.querySelector('i').className = 'fas fa-times';
+        }
+
+        // Toggle Sidebar dengan animasi
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.className = 'fas fa-bars';
+                localStorage.setItem('sidebarCollapsed', 'true');
+            } else {
+                icon.className = 'fas fa-times';
+                localStorage.setItem('sidebarCollapsed', 'false');
+            }
+        });
+
+        // Set min date untuk input tanggal
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date-input').setAttribute('min', today);
+    });
+
+    // ========== FUNGSI MODAL HAPUS ==========
+    function showDeleteModal(button) {
+        const id = button.getAttribute('data-id');
+        const username = button.getAttribute('data-username');
+        const fieldId = button.getAttribute('data-field-id');
+
+        console.log('Data untuk delete:', { id, username, fieldId }); // Debug log
+
+        // Set data ke modal
+        document.getElementById('delete-item-name').textContent = username;
+        document.getElementById('delete-message').innerHTML =
+            `Apakah Anda yakin ingin menghapus booking dari <strong>${username}</strong> (ID: ${id})?`;
+
+        // Set hidden inputs untuk form delete
+        document.getElementById('delete-booking-id').value = id;
+        document.getElementById('delete-field-id').value = fieldId || 0; // Default value jika null
+
+        // Tampilkan modal
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        deleteModal.show();
+    }
+
+    // ========== FUNGSI FILTER ==========
+    function handleFilterSubmit() {
+        // Trim input sebelum submit
+        const usernameInput = document.getElementById('username-input');
+        if (usernameInput && usernameInput.value) {
+            usernameInput.value = usernameInput.value.trim();
+        }
+
+        // Simpan filter ke localStorage sebelum submit
+        saveFiltersToLocalStorage();
+
+        // Lanjutkan submit form
+        return true;
+    }
+
+    function resetFilter() {
+        // Reset semua input field
+        document.getElementById('id-booking-input').value = '';
+        document.getElementById('field-name-select').value = '';
+        document.getElementById('username-input').value = '';
+        document.getElementById('status-booking-select').value = '';
+        document.getElementById('status-pembayaran-select').value = '';
+        document.getElementById('date-input').value = '';
+        document.getElementById('pageInput').value = 0;
+
+        // Hapus filter dari localStorage
+        localStorage.removeItem('bookingFilters');
+
+        // Submit form untuk reload halaman tanpa filter
+        document.getElementById('filterForm').submit();
+    }
+
+    function changePage(page) {
+        // Simpan filter ke localStorage sebelum pindah halaman
+        saveFiltersToLocalStorage();
+
+        document.getElementById('pageInput').value = page;
+        document.getElementById('filterForm').submit();
+    }
+
+    // Fungsi untuk trim input saat blur (kehilangan fokus)
+    function trimUsername(input) {
+        if (input && input.value) {
+            input.value = input.value.trim();
+        }
+    }
+
+    // Fungsi untuk menyimpan filter ke localStorage
+    function saveFiltersToLocalStorage() {
+        const filters = {
+            idBooking: document.getElementById('id-booking-input').value,
+            fieldName: document.getElementById('field-name-select').value,
+            username: document.getElementById('username-input').value,
+            statusBooking: document.getElementById('status-booking-select').value,
+            statusPembayaran: document.getElementById('status-pembayaran-select').value,
+            date: document.getElementById('date-input').value
+        };
+
+        localStorage.setItem('bookingFilters', JSON.stringify(filters));
+    }
+
+    // Fungsi untuk memulihkan filter dari localStorage
+    function restoreFiltersFromLocalStorage() {
+        const savedFilters = localStorage.getItem('bookingFilters');
+        if (savedFilters) {
+            const filters = JSON.parse(savedFilters);
+
+            // Hanya set nilai jika field kosong (tidak ada nilai dari server)
+            if (document.getElementById('id-booking-input').value === '') {
+                document.getElementById('id-booking-input').value = filters.idBooking || '';
+            }
+            if (document.getElementById('field-name-select').value === '') {
+                document.getElementById('field-name-select').value = filters.fieldName || '';
+            }
+            if (document.getElementById('username-input').value === '') {
+                document.getElementById('username-input').value = filters.username || '';
+            }
+            if (document.getElementById('status-booking-select').value === '') {
+                document.getElementById('status-booking-select').value = filters.statusBooking || '';
+            }
+            if (document.getElementById('status-pembayaran-select').value === '') {
+                document.getElementById('status-pembayaran-select').value = filters.statusPembayaran || '';
+            }
+            if (document.getElementById('date-input').value === '') {
+                document.getElementById('date-input').value = filters.date || '';
+            }
+        }
+    }
+
+    // ========== FUNGSI MODAL DETAIL ==========
+    function openDetailModal(btn) {
+        const id = btn.getAttribute('data-id');
+        const username = btn.getAttribute('data-username');
+        const handphone = btn.getAttribute('data-handphone');
+        const waktuMulai = btn.getAttribute('data-waktu-mulai');
+        const waktuSelesai = btn.getAttribute('data-waktu-selesai');
+        const harga = btn.getAttribute('data-harga');
+        const lapanganNama = btn.getAttribute('data-lapangan-nama');
+        const lapanganJenis = btn.getAttribute('data-lapangan-jenis');
+        const lapanganHarga = btn.getAttribute('data-lapangan-harga');
+        const lapanganLokasi = btn.getAttribute('data-lapangan-lokasi');
+        const lapanganDeskripsi = btn.getAttribute('data-lapangan-deskripsi');
+        const lapanganTanggalBeroperasi = btn.getAttribute('data-lapangan-tanggal-beroperasi');
+
+        // Isi data ke modal detail
+        document.getElementById('detail-id').textContent = id || '-';
+        document.getElementById('detail-username').textContent = username || '-';
+        document.getElementById('detail-handphone').textContent = handphone || '-';
+        document.getElementById('detail-waktu-mulai').textContent = formatDateTime(waktuMulai);
+        document.getElementById('detail-waktu-selesai').textContent = formatDateTime(waktuSelesai);
+        document.getElementById('detail-harga').textContent = harga ? 'Rp ' + formatNumber(parseInt(harga)) : '-';
+        document.getElementById('detail-lapangan-nama').textContent = lapanganNama || '-';
+        document.getElementById('detail-lapangan-jenis').textContent = lapanganJenis || '-';
+        document.getElementById('detail-lapangan-harga').textContent = lapanganHarga ? 'Rp ' + formatNumber(parseInt(lapanganHarga)) + '/jam' : '-';
+        document.getElementById('detail-lapangan-lokasi').textContent = lapanganLokasi || '-';
+        document.getElementById('detail-lapangan-deskripsi').textContent = lapanganDeskripsi || '-';
+        document.getElementById('detail-lapangan-tanggal-beroperasi').textContent = formatDate(lapanganTanggalBeroperasi);
+    }
+
+    // ========== FUNGSI MODAL EDIT ==========
+    function openEditModal(btn) {
+        const id = btn.getAttribute('data-id');
+        const username = btn.getAttribute('data-username');
+        const handphone = btn.getAttribute('data-handphone');
+        const waktuMulaiRaw = btn.getAttribute('data-waktu-mulai');
+        const waktuSelesaiRaw = btn.getAttribute('data-waktu-selesai');
+        const statusBooking = btn.getAttribute('data-status-booking');
+        const statusPembayaran = btn.getAttribute('data-status-pembayaran');
+        const idField = btn.getAttribute('data-id-field');
+        const tanggalBeroperasi = btn.getAttribute('data-lapangan-tanggal-beroperasi');
+
+        console.log('Data untuk edit:', { id, username, handphone, idField, tanggalBeroperasi }); // Debug log
+
+        // Isi data ke form edit
+        document.getElementById('edit-id').value = id || '';
+        document.getElementById('edit-id-field').value = idField || '';
+        document.getElementById('edit-username').value = username || '';
+        document.getElementById('edit-handphone').value = handphone || '';
+        document.getElementById('edit-lapangan-tanggal-beroperasi').value = tanggalBeroperasi || '';
+
+        // Set nilai dropdown status booking
+        const statusBookingSelect = document.getElementById('edit-status-booking');
+        if (statusBookingSelect) {
+            statusBookingSelect.value = statusBooking || '';
+        }
+
+        // Set nilai dropdown status pembayaran
+        const statusPembayaranSelect = document.getElementById('edit-status-pembayaran');
+        if (statusPembayaranSelect) {
+            statusPembayaranSelect.value = statusPembayaran || '';
+        }
+
+        // Tampilkan info tanggal beroperasi
+        if (tanggalBeroperasi) {
+            const formattedDate = formatDate(tanggalBeroperasi);
+            document.getElementById('tanggal-beroperasi-info').innerHTML =
+                `Lapangan beroperasi sampai: <strong>${formattedDate}</strong>`;
+
+            // Set max date untuk input datetime-local berdasarkan tanggal beroperasi
+            const maxDate = formatDateForInput(tanggalBeroperasi) + "T23:59";
+            const waktuMulaiInput = document.getElementById('edit-waktu-mulai');
+            const waktuSelesaiInput = document.getElementById('edit-waktu-selesai');
+
+            if (waktuMulaiInput) {
+                waktuMulaiInput.max = maxDate;
+                // Set nilai awal
+                if (waktuMulaiRaw) {
+                    const isoFormat = convertToISOFormat(waktuMulaiRaw);
+                    waktuMulaiInput.value = isoFormat.substring(0, 16); // Potong untuk datetime-local
+                }
+            }
+            if (waktuSelesaiInput) {
+                waktuSelesaiInput.max = maxDate;
+                // Set nilai awal
+                if (waktuSelesaiRaw) {
+                    const isoFormat = convertToISOFormat(waktuSelesaiRaw);
+                    waktuSelesaiInput.value = isoFormat.substring(0, 16); // Potong untuk datetime-local
+                }
+            }
+
+            // Inisialisasi flatpickr dengan minDate dan maxDate
+            initializeFlatpickrWithLimits(tanggalBeroperasi, waktuMulaiRaw, waktuSelesaiRaw);
+        } else {
+            // Set nilai tanpa batasan tanggal
+            const waktuMulaiInput = document.getElementById('edit-waktu-mulai');
+            const waktuSelesaiInput = document.getElementById('edit-waktu-selesai');
+
+            if (waktuMulaiInput && waktuMulaiRaw) {
+                const isoFormat = convertToISOFormat(waktuMulaiRaw);
+                waktuMulaiInput.value = isoFormat.substring(0, 16);
+            }
+            if (waktuSelesaiInput && waktuSelesaiRaw) {
+                const isoFormat = convertToISOFormat(waktuSelesaiRaw);
+                waktuSelesaiInput.value = isoFormat.substring(0, 16);
+            }
+
+            initializeFlatpickr(waktuMulaiRaw, waktuSelesaiRaw);
+        }
+    }
+
+    // Fungsi untuk mengkonversi ke format ISO (yyyy-MM-ddTHH:mm:ss)
+    function convertToISOFormat(dateTimeString) {
+        if (!dateTimeString) return '';
+
+        try {
+            // Jika sudah dalam format ISO (mengandung T), langsung return
+            if (dateTimeString.includes('T')) {
+                // Tambah detik jika belum ada
+                if (dateTimeString.length <= 16) {
+                    return dateTimeString + ':00';
+                }
+                return dateTimeString;
+            }
+
+            // Jika format dengan spasi "2026-01-19 13:00"
+            if (dateTimeString.includes(' ')) {
+                const [datePart, timePart] = dateTimeString.split(' ');
+                return datePart + 'T' + timePart + ':00';
+            }
+
+            // Default: parse sebagai Date
+            const date = new Date(dateTimeString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+
+            return `${year}-${month}-${day}T${hours}:${minutes}:00`;
+        } catch (e) {
+            console.error('Error converting to ISO format:', e);
+            return '';
+        }
+    }
+
+    // Fungsi untuk format tanggal ke YYYY-MM-DD
+    function formatDateForInput(dateString) {
+        if (!dateString) return '';
+        try {
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        } catch (e) {
+            console.error('Error formatting date:', e);
+            return '';
+        }
+    }
+
+    // Fungsi untuk inisialisasi flatpickr dengan batasan tanggal
+    function initializeFlatpickrWithLimits(tanggalBeroperasi, waktuMulaiRaw, waktuSelesaiRaw) {
+        if (typeof flatpickr !== 'undefined') {
+            // Konversi tanggal beroperasi ke Date object
+            const maxDate = new Date(tanggalBeroperasi);
+            maxDate.setHours(23, 59, 59, 999); // Set ke akhir hari
+
+            // Set nilai default dari data
+            let defaultWaktuMulai = null;
+            let defaultWaktuSelesai = null;
+
+            if (waktuMulaiRaw) {
+                defaultWaktuMulai = new Date(convertToISOFormat(waktuMulaiRaw));
+            }
+            if (waktuSelesaiRaw) {
+                defaultWaktuSelesai = new Date(convertToISOFormat(waktuSelesaiRaw));
+            }
+
+            // Inisialisasi flatpickr untuk waktu mulai
+            flatpickr("#edit-waktu-mulai", {
+                enableTime: true,
+                dateFormat: "Y-m-d\\TH:i", // Format ISO dengan T (harus di-escape)
+                altFormat: "Y-m-d H:i", // Format untuk display
+                altInput: true,
+                time_24hr: true,
+                locale: "id",
+                minuteIncrement: 30,
+                maxDate: maxDate,
+                defaultDate: defaultWaktuMulai,
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Format sudah ISO, langsung simpan ke hidden field
+                    const isoDate = dateStr;
+                    document.getElementById('edit-waktu-mulai-hidden').value = isoDate + ':00';
+                }
+            });
+
+            // Inisialisasi flatpickr untuk waktu selesai
+            flatpickr("#edit-waktu-selesai", {
+                enableTime: true,
+                dateFormat: "Y-m-d\\TH:i", // Format ISO dengan T (harus di-escape)
+                altFormat: "Y-m-d H:i", // Format untuk display
+                altInput: true,
+                time_24hr: true,
+                locale: "id",
+                minuteIncrement: 30,
+                maxDate: maxDate,
+                defaultDate: defaultWaktuSelesai,
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Format sudah ISO, langsung simpan ke hidden field
+                    const isoDate = dateStr;
+                    document.getElementById('edit-waktu-selesai-hidden').value = isoDate + ':00';
+                }
+            });
+        }
+    }
+
+    // Fungsi untuk inisialisasi flatpickr tanpa batasan
+    function initializeFlatpickr(waktuMulaiRaw, waktuSelesaiRaw) {
+        if (typeof flatpickr !== 'undefined') {
+            // Set nilai default dari data
+            let defaultWaktuMulai = null;
+            let defaultWaktuSelesai = null;
+
+            if (waktuMulaiRaw) {
+                defaultWaktuMulai = new Date(convertToISOFormat(waktuMulaiRaw));
+            }
+            if (waktuSelesaiRaw) {
+                defaultWaktuSelesai = new Date(convertToISOFormat(waktuSelesaiRaw));
+            }
+
+            flatpickr("#edit-waktu-mulai", {
+                enableTime: true,
+                dateFormat: "Y-m-d\\TH:i", // Format ISO dengan T
+                altFormat: "Y-m-d H:i",
+                altInput: true,
+                time_24hr: true,
+                locale: "id",
+                minuteIncrement: 30,
+                defaultDate: defaultWaktuMulai,
+                onChange: function(selectedDates, dateStr, instance) {
+                    const isoDate = dateStr;
+                    document.getElementById('edit-waktu-mulai-hidden').value = isoDate + ':00';
+                }
+            });
+
+            flatpickr("#edit-waktu-selesai", {
+                enableTime: true,
+                dateFormat: "Y-m-d\\TH:i", // Format ISO dengan T
+                altFormat: "Y-m-d H:i",
+                altInput: true,
+                time_24hr: true,
+                locale: "id",
+                minuteIncrement: 30,
+                defaultDate: defaultWaktuSelesai,
+                onChange: function(selectedDates, dateStr, instance) {
+                    const isoDate = dateStr;
+                    document.getElementById('edit-waktu-selesai-hidden').value = isoDate + ':00';
+                }
+            });
+        }
+    }
+
+    // ========== FUNGSI HELPER ==========
+    function formatNumber(num) {
+        if (!num) return '0';
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function formatDateTime(dateTimeString) {
+        if (!dateTimeString) return '-';
+        try {
+            const date = new Date(dateTimeString);
+            return date.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).replace(',', '');
+        } catch (e) {
+            return dateTimeString;
+        }
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        } catch (e) {
+            return dateString;
+        }
+    }
+
+    // ========== VALIDASI FORM EDIT ==========
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            return false;
+        }
+
+        return true;
+    });
+
+    // Validasi form lengkap
+    function validateForm() {
+        const username = document.getElementById('edit-username');
+        const handphone = document.getElementById('edit-handphone');
+        const waktuMulai = document.getElementById('edit-waktu-mulai');
+        const waktuSelesai = document.getElementById('edit-waktu-selesai');
+        const statusBooking = document.getElementById('edit-status-booking');
+        const statusPembayaran = document.getElementById('edit-status-pembayaran');
+
+        // Validasi field required
+        if (!username.value.trim()) {
+            alert('Nama pelanggan tidak boleh kosong!');
+            username.focus();
+            return false;
+        }
+
+        if (!handphone.value.trim()) {
+            alert('Nomor handphone tidak boleh kosong!');
+            handphone.focus();
+            return false;
+        }
+
+        // Validasi format handphone
+        const phoneRegex = /^08[0-9]{9,}$/;
+        if (!phoneRegex.test(handphone.value.trim())) {
+            alert('Format nomor handphone tidak valid! Harus diawali 08 dan minimal 11 digit.');
+            handphone.focus();
+            return false;
+        }
+
+        if (!waktuMulai.value) {
+            alert('Waktu mulai tidak boleh kosong!');
+            waktuMulai.focus();
+            return false;
+        }
+
+        if (!waktuSelesai.value) {
+            alert('Waktu selesai tidak boleh kosong!');
+            waktuSelesai.focus();
+            return false;
+        }
+
+        if (!statusBooking.value) {
+            alert('Status booking harus dipilih!');
+            statusBooking.focus();
+            return false;
+        }
+
+        if (!statusPembayaran.value) {
+            alert('Status pembayaran harus dipilih!');
+            statusPembayaran.focus();
+            return false;
+        }
+
+        return true;
+    }
+
+    // Event listener untuk validasi real-time
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto trim input saat form submit
+        const filterForm = document.getElementById('filterForm');
+        if (filterForm) {
+            filterForm.addEventListener('submit', function() {
+                const usernameInput = document.getElementById('username-input');
+                if (usernameInput && usernameInput.value) {
+                    usernameInput.value = usernameInput.value.trim();
+                }
+            });
+        }
+
+        // Pulihkan filter dari localStorage saat halaman dimuat
+        restoreFiltersFromLocalStorage();
+
+        // Simpan filter ke localStorage saat user mengubah input
+        const filterInputs = [
+            'id-booking-input',
+            'field-name-select',
+            'username-input',
+            'status-booking-select',
+            'status-pembayaran-select',
+            'date-input'
+        ];
+
+        filterInputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('change', saveFiltersToLocalStorage);
+                input.addEventListener('input', saveFiltersToLocalStorage);
+            }
+        });
+    });
+</script>
+</body>
+</html>

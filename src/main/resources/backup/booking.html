@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Lapangan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .booking-card {
+            max-width: 800px;
+            margin: 20px auto;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .booking-header {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 20px;
+        }
+
+        .field-info-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #4361ee;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #eaeaea;
+        }
+
+        .time-slot {
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            background: white;
+            margin: 3px;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .time-slot:hover {
+            transform: translateY(-2px);
+        }
+
+        .time-slot.available {
+            background-color: #e7f5ff;
+            border-color: #4dabf7;
+            color: #1864ab;
+        }
+
+        .time-slot.selected {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            color: white;
+            border-color: #4361ee;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
+        }
+
+        .time-slot.disabled {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+            color: #adb5bd;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .duration-btn {
+            padding: 10px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            transition: all 0.2s;
+            font-weight: 500;
+            margin: 3px;
+            flex: 1;
+        }
+
+        .duration-btn.active {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            color: white;
+            border-color: #4361ee;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #4361ee;
+        }
+
+        .bank-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #eaeaea;
+            transition: all 0.2s;
+        }
+
+        .bank-card:hover {
+            border-color: #4361ee;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 30px 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .file-upload-area:hover {
+            border-color: #4361ee;
+            background-color: #f0f5ff;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        @media (max-width: 768px) {
+            .booking-card {
+                margin: 0;
+                border-radius: 0;
+            }
+            .booking-header {
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container py-3">
+    <div class="booking-card">
+        <!-- Header -->
+        <div class="booking-header">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-calendar-check fs-3 me-3"></i>
+                <div>
+                    <h1 class="h4 mb-1 fw-bold">Booking Lapangan</h1>
+                    <p class="mb-0 small opacity-90">Isi form untuk melakukan reservasi</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="p-3">
+            <!-- Info Lapangan -->
+            <div class="field-info-card" th:if="${lapangan != null}">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="fw-bold mb-2" th:text="${lapangan.namaLapangan}"></h5>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <span class="badge bg-primary" th:text="${lapangan.jenisLapangan}"></span>
+                            <span class="text-success fw-bold">
+                                <i class="bi bi-cash-coin me-1"></i>
+                                Rp <span th:text="${#numbers.formatInteger(lapangan.hargaLapanganPerjam, 0, 'COMMA')}"></span>/jam
+                            </span>
+                        </div>
+                        <div class="mt-2 small text-muted">
+                            <i class="bi bi-clock me-1"></i>
+                            <span th:if="${lapangan.jamOprasional != null}"
+                                  th:text="${lapangan.jamOprasional.waktuMulai} + ' - ' + ${lapangan.jamOprasional.waktuSelesai}">
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                        <div class="small text-muted">
+                            <div>Beroperasi hingga:</div>
+                            <strong class="text-dark" th:text="${#temporals.format(lapangan.tanggalBeroperasi, 'dd-MM-yyyy')}"></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pesan Batas Tanggal -->
+            <div th:if="${maxDateMessage != null}" class="alert alert-warning alert-custom mb-3">
+                <i class="bi bi-info-circle me-2"></i>
+                <span th:text="${maxDateMessage}"></span>
+            </div>
+
+            <!-- Jika Booking Ditutup -->
+            <div th:if="${bookingClosed == true}" class="alert alert-danger text-center py-4">
+                <i class="bi bi-calendar-x fs-1 mb-3"></i>
+                <h5 class="fw-bold">Booking Ditutup</h5>
+                <p th:text="${closedMessage}" class="mb-3"></p>
+                <a th:href="@{/jadwal-lapangan}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left me-1"></i>Kembali
+                </a>
+            </div>
+
+            <!-- Form Booking -->
+            <form th:if="${bookingClosed != true}"
+                  th:action="@{/booking/{id}(id=${lapangan.id})}"
+                  method="post"
+                  th:object="${bookingForm}"
+                  id="bookingForm"
+                  enctype="multipart/form-data">
+                <input type="hidden" th:field="*{idField}">
+                <input type="hidden" th:field="*{startTime}" id="startTime">
+                <input type="hidden" th:field="*{endedTime}" id="endedTime">
+
+                <!-- Data Pribadi -->
+                <div class="form-section">
+                    <h6 class="fw-bold mb-3 text-primary">
+                        <i class="bi bi-person me-2"></i>Data Pribadi
+                    </h6>
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold">Nama Lengkap</label>
+                        <input type="text" class="form-control"
+                               th:field="*{username}"
+                               id="username"
+                               placeholder="Masukkan nama lengkap"
+                               required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}"
+                             th:errors="*{username}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="handPhoneNumber" class="form-label fw-semibold">Nomor WhatsApp</label>
+                        <input type="tel" class="form-control"
+                               th:field="*{handPhoneNumber}"
+                               id="handPhoneNumber"
+                               placeholder="Contoh: 081234567890"
+                               maxlength="13"
+                               required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('handPhoneNumber')}"
+                             th:errors="*{handPhoneNumber}"></div>
+                    </div>
+                </div>
+
+                <!-- Waktu Booking -->
+                <div class="form-section">
+                    <h6 class="fw-bold mb-3 text-primary">
+                        <i class="bi bi-clock me-2"></i>Waktu Booking
+                    </h6>
+
+                    <!-- Tanggal -->
+                    <div class="mb-4">
+                        <label for="bookingDate" class="form-label fw-semibold">Pilih Tanggal</label>
+                        <input type="date"
+                               class="form-control"
+                               id="bookingDate"
+                               th:attr="min=${minBookingDate}, max=${maxBookingDate}"
+                               required>
+                        <div class="text-muted small mt-1" id="dateInfo"></div>
+                    </div>
+
+                    <!-- Loading -->
+                    <div class="text-center py-4" id="loadingSpinner" style="display: none;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2">Memuat waktu tersedia...</p>
+                    </div>
+
+                    <!-- Slot Waktu -->
+                    <div id="timeSlotsSection" style="display: none;">
+                        <label class="form-label fw-semibold mb-2">Pilih Waktu Mulai</label>
+
+                        <div class="d-flex flex-wrap mb-3" id="timeSlotContainer">
+                            <!-- Slot akan diisi JavaScript -->
+                        </div>
+
+                        <div class="alert alert-info small">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Booking minimal 1 jam sebelum waktu mulai
+                        </div>
+
+                        <div class="text-center py-4" id="noSlotsMessage" style="display: none;">
+                            <i class="bi bi-calendar-x fs-1 text-muted"></i>
+                            <p class="text-muted mt-2">Tidak ada waktu tersedia</p>
+                        </div>
+                    </div>
+
+                    <!-- Waktu Terpilih -->
+                    <div class="alert alert-success mt-3" id="selectedTimeDisplay" style="display: none;">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-check-circle me-2"></i>
+                            <div>
+                                <strong>Waktu Dipilih:</strong>
+                                <span id="selectedDateTime" class="ms-1"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Durasi Booking -->
+                    <div class="mt-4">
+                        <label class="form-label fw-semibold mb-2">Durasi Booking</label>
+                        <div class="d-flex flex-wrap" id="durationButtons">
+                            <!-- Buttons akan diisi JavaScript -->
+                        </div>
+                        <input type="hidden" id="durationHours" value="1">
+                        <div class="text-muted small mt-1">
+                            Max. booking: <span id="maxDurationText" th:text="${maxWaktuBooking}"></span> jam
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ringkasan Booking -->
+                <div class="summary-card">
+                    <h6 class="fw-bold mb-3 text-primary">
+                        <i class="bi bi-receipt me-2"></i>Ringkasan Booking
+                    </h6>
+
+                    <!-- Baris pertama: Durasi dan Harga per Jam -->
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-muted small">Durasi</div>
+                            <div class="fw-bold fs-5" id="durationDisplay">1 jam</div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <div class="text-muted small">Harga per Jam</div>
+                            <div class="fw-bold fs-5 text-success">
+                                Rp <span id="pricePerHourDisplay" th:text="${#numbers.formatInteger(lapangan.hargaLapanganPerjam, 0, 'COMMA')}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <!-- Baris kedua: Waktu Mulai dan Selesai -->
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-muted small">Waktu Mulai</div>
+                            <div class="fw-bold" id="startTimeDisplay">-</div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <div class="text-muted small">Waktu Selesai</div>
+                            <div class="fw-bold" id="endTimeDisplay">-</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <!-- Baris ketiga: Total Biaya -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">Total Biaya</div>
+                            <div class="h4 fw-bold text-success mb-0" id="totalPriceDisplay">Rp 0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rekening Pembayaran -->
+                <div class="form-section" th:if="${listRekeningPembayaran != null and !listRekeningPembayaran.isEmpty()}">
+                    <h6 class="fw-bold mb-3 text-primary">
+                        <i class="bi bi-bank me-2"></i>Transfer Pembayaran
+                    </h6>
+
+                    <div class="alert alert-warning mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Transfer sesuai total di atas ke rekening berikut:
+                    </div>
+
+                    <div th:each="rekening : ${listRekeningPembayaran}" class="mb-2">
+                        <div class="bank-card">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary text-white rounded p-2 me-3">
+                                    <i class="bi bi-bank"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold" th:text="${rekening.bank}"></div>
+                                    <div class="text-muted small">
+                                        <span th:text="${rekening.noRekening}"></span>
+                                        (a/n <span th:text="${rekening.atasNama}"></span>)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Bukti -->
+                <div class="form-section">
+                    <h6 class="fw-bold mb-3 text-primary">
+                        <i class="bi bi-camera me-2"></i>Upload Bukti Transfer
+                    </h6>
+
+                    <input type="file"
+                           class="form-control"
+                           id="imagePayment"
+                           name="imagePayment"
+                           accept="image/*"
+                           required
+                           style="display: none;"
+                           onchange="bookingManager.handleImageUpload(event)">
+
+                    <div class="file-upload-area" id="fileUploadContainer" onclick="document.getElementById('imagePayment').click()">
+                        <i class="bi bi-cloud-arrow-up fs-1 text-primary mb-3"></i>
+                        <p class="mb-2 fw-semibold">Klik untuk upload bukti transfer</p>
+                        <p class="text-muted small">Format: JPG, PNG</p>
+                        <button type="button" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-upload me-1"></i>Pilih File
+                        </button>
+                    </div>
+
+                    <img id="imagePreview" class="preview-image" alt="Preview">
+
+                    <div id="fileInfo" class="mt-2" style="display: none;">
+                        <div class="alert alert-success d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-check-circle me-2"></i>
+                                <span id="fileName"></span>
+                            </div>
+                            <button type="button" class="btn-close btn-sm" onclick="bookingManager.removeImage()"></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Syarat -->
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                    <label class="form-check-label small" for="termsCheck">
+                        Saya setuju dengan syarat dan ketentuan
+                    </label>
+                </div>
+
+                <!-- Tombol -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                        <i class="bi bi-calendar-check me-2"></i>Booking Sekarang
+                    </button>
+                    <a th:href="@{/jadwal-lapangan}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Kembali
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const bookingManager = {
+        fieldId: /*[[${lapangan.id}]]*/ 0,
+        pricePerHour: /*[[${lapangan != null ? lapangan.hargaLapanganPerjam : 100000}]]*/ 100000,
+        maxWaktuBooking: /*[[${maxWaktuBooking != null ? maxWaktuBooking : 4}]]*/ 4,
+        jamSelesai: /*[[${lapangan != null && lapangan.jamOprasional != null ? lapangan.jamOprasional.waktuSelesai : '23:00'}]]*/ '23:00',
+        maxBookingDate: /*[[${maxBookingDate != null ? maxBookingDate : ''}]]*/ '',
+        minBookingDate: /*[[${minBookingDate != null ? minBookingDate : ''}]]*/ '',
+        minDateTime: /*[[${minDateTime != null ? minDateTime : ''}]]*/ '',
+
+        selectedDate: null,
+        selectedStartTime: null,
+        selectedDuration: 1,
+        availableTimes: [],
+        imageFile: null,
+
+        init: function() {
+            this.setupDatePicker();
+            this.setupDurationButtons();
+            this.setupEventListeners();
+            this.fetchAvailableTimes();
+            this.updateSubmitButton();
+
+            // Format harga per jam untuk ditampilkan
+            this.formatPricePerHour();
+        },
+
+        formatPricePerHour: function() {
+            // Format harga per jam untuk display (tanpa desimal)
+            const priceElement = document.getElementById('pricePerHourDisplay');
+            if (priceElement) {
+                const formattedPrice = new Intl.NumberFormat('id-ID', {
+                    style: 'decimal',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(this.pricePerHour);
+                priceElement.textContent = formattedPrice;
+            }
+        },
+
+        setupDatePicker: function() {
+            const dateInput = document.getElementById('bookingDate');
+            const today = new Date().toISOString().split('T')[0];
+
+            if (dateInput) {
+                dateInput.min = this.minBookingDate || today;
+                if (this.maxBookingDate) {
+                    dateInput.max = this.maxBookingDate;
+                }
+
+                dateInput.value = today;
+                this.selectedDate = today;
+
+                dateInput.addEventListener('change', (e) => {
+                    this.selectedDate = e.target.value;
+                    this.selectedStartTime = null;
+                    this.clearSelection();
+                    this.fetchAvailableTimes();
+                });
+            }
+        },
+
+        setupDurationButtons: function() {
+            const container = document.getElementById('durationButtons');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            // Buat tombol durasi berdasarkan maxWaktuBooking
+            for (let i = 1; i <= this.maxWaktuBooking; i++) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `btn duration-btn ${i === 1 ? 'active' : ''}`;
+                btn.textContent = `${i} Jam`;
+                btn.dataset.hours = i;
+
+                btn.addEventListener('click', (e) => {
+                    if (!this.selectedStartTime) {
+                        alert('Pilih waktu mulai terlebih dahulu');
+                        return;
+                    }
+                    this.setDuration(e.target);
+                });
+
+                container.appendChild(btn);
+            }
+        },
+
+        setDuration: function(button) {
+            if (!this.selectedStartTime) return;
+
+            document.querySelectorAll('.duration-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+
+            this.selectedDuration = parseInt(button.dataset.hours);
+            document.getElementById('durationDisplay').textContent = `${this.selectedDuration} jam`;
+            this.calculateBooking();
+        },
+
+        setupEventListeners: function() {
+            // Form validation
+            ['username', 'handPhoneNumber'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', () => this.updateSubmitButton());
+            });
+
+            // Terms checkbox
+            const terms = document.getElementById('termsCheck');
+            if (terms) terms.addEventListener('change', () => this.updateSubmitButton());
+        },
+
+        fetchAvailableTimes: function() {
+            if (!this.fieldId || !this.selectedDate) return;
+
+            const loading = document.getElementById('loadingSpinner');
+            const slotsSection = document.getElementById('timeSlotsSection');
+
+            if (loading) loading.style.display = 'block';
+            if (slotsSection) slotsSection.style.display = 'none';
+
+            fetch(`/avaliable-time?id=${this.fieldId}&date=${this.selectedDate}`)
+                .then(res => res.json())
+                .then(data => {
+                    this.availableTimes = data;
+                    this.displayTimeSlots(data);
+                    if (loading) loading.style.display = 'none';
+                    if (slotsSection) slotsSection.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    if (loading) loading.style.display = 'none';
+                });
+        },
+
+        displayTimeSlots: function(bookingTimes) {
+            const container = document.getElementById('timeSlotContainer');
+            const noSlots = document.getElementById('noSlotsMessage');
+
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            if (!bookingTimes || bookingTimes.length === 0) {
+                if (noSlots) noSlots.style.display = 'block';
+                return;
+            }
+
+            if (noSlots) noSlots.style.display = 'none';
+
+            // Filter hanya slot yang TERSEDIA
+            const availableSlots = bookingTimes.filter(slot =>
+                slot.bookingStatus === 'TERSEDIA'
+            );
+
+            // Urutkan berdasarkan waktu
+            availableSlots.sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            availableSlots.forEach(slot => {
+                const slotBtn = document.createElement('button');
+                slotBtn.type = 'button';
+                slotBtn.className = 'time-slot';
+                slotBtn.textContent = slot.startTime.substring(0, 5);
+                slotBtn.dataset.time = slot.startTime;
+
+                // Validasi jika waktu terlalu dekat
+                const slotTime = new Date(`${this.selectedDate}T${slot.startTime}`);
+                const now = new Date();
+                const minTime = new Date(now.getTime() + 60 * 60 * 1000); // 1 jam dari sekarang
+
+                if (slotTime < minTime) {
+                    slotBtn.classList.add('disabled');
+                    slotBtn.title = 'Minimal booking 1 jam dari sekarang';
+                } else {
+                    slotBtn.classList.add('available');
+                    slotBtn.addEventListener('click', () => this.selectTimeSlot(slotBtn));
+                }
+
+                container.appendChild(slotBtn);
+            });
+        },
+
+        selectTimeSlot: function(slotElement) {
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+
+            slotElement.classList.add('selected');
+            this.selectedStartTime = slotElement.dataset.time;
+
+            // Update hidden inputs
+            document.getElementById('startTime').value = `${this.selectedDate}T${this.selectedStartTime}`;
+
+            // Update display
+            this.updateSelectedDisplay();
+
+            // Reset durasi ke 1 jam
+            this.resetDuration();
+
+            // Hitung booking
+            this.calculateBooking();
+
+            this.updateSubmitButton();
+        },
+
+        updateSelectedDisplay: function() {
+            const display = document.getElementById('selectedTimeDisplay');
+            const dateTime = document.getElementById('selectedDateTime');
+
+            if (display && dateTime) {
+                const date = new Date(this.selectedDate);
+                const dateStr = date.toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+
+                dateTime.textContent = `${dateStr}, ${this.selectedStartTime.substring(0, 5)}`;
+                display.style.display = 'flex';
+            }
+        },
+
+        resetDuration: function() {
+            document.querySelectorAll('.duration-btn').forEach((btn, index) => {
+                btn.classList.remove('active');
+                if (index === 0) btn.classList.add('active');
+            });
+
+            this.selectedDuration = 1;
+            document.getElementById('durationDisplay').textContent = '1 jam';
+            document.getElementById('durationHours').value = '1';
+        },
+
+        calculateBooking: function() {
+            if (!this.selectedStartTime || !this.selectedDate) return;
+
+            try {
+                // Hitung waktu selesai
+                const start = new Date(`${this.selectedDate}T${this.selectedStartTime}`);
+                const end = new Date(start.getTime() + (this.selectedDuration * 60 * 60 * 1000));
+
+                // Validasi tidak melewati jam selesai operasional
+                const [jam, menit] = this.jamSelesai.split(':');
+                const maxEnd = new Date(start);
+                maxEnd.setHours(parseInt(jam), parseInt(menit), 0, 0);
+
+                if (end > maxEnd) {
+                    // Otomatis sesuaikan durasi maksimal
+                    const maxDurationHours = (maxEnd - start) / (1000 * 60 * 60);
+                    const maxPossibleDuration = Math.floor(maxDurationHours);
+
+                    if (maxPossibleDuration > 0) {
+                        this.selectedDuration = Math.min(this.selectedDuration, maxPossibleDuration);
+                        this.selectedDuration = Math.min(this.selectedDuration, this.maxWaktuBooking);
+
+                        // Update tombol durasi
+                        document.querySelectorAll('.duration-btn').forEach(btn => {
+                            const hours = parseInt(btn.dataset.hours);
+                            btn.disabled = hours > this.selectedDuration;
+                            btn.classList.toggle('active', hours === this.selectedDuration);
+                        });
+
+                        document.getElementById('durationDisplay').textContent = `${this.selectedDuration} jam`;
+                        document.getElementById('durationHours').value = this.selectedDuration;
+
+                        // Hitung ulang end time
+                        end.setTime(start.getTime() + (this.selectedDuration * 60 * 60 * 1000));
+                    } else {
+                        alert('Tidak bisa booking karena sudah mendekati waktu tutup');
+                        this.clearSelection();
+                        return;
+                    }
+                }
+
+                // Format waktu untuk display
+                const startStr = start.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+                const endStr = end.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+
+                document.getElementById('startTimeDisplay').textContent = startStr;
+                document.getElementById('endTimeDisplay').textContent = endStr;
+
+                // Update hidden input endedTime
+                const year = end.getFullYear();
+                const month = String(end.getMonth() + 1).padStart(2, '0');
+                const day = String(end.getDate()).padStart(2, '0');
+                const hours = String(end.getHours()).padStart(2, '0');
+                const minutes = String(end.getMinutes()).padStart(2, '0');
+
+                document.getElementById('endedTime').value = `${year}-${month}-${day}T${hours}:${minutes}:00`;
+
+                // Hitung harga
+                const totalPrice = this.selectedDuration * this.pricePerHour;
+                this.updateTotalPriceDisplay(totalPrice);
+
+            } catch (error) {
+                console.error('Error calculating booking:', error);
+            }
+        },
+
+        updateTotalPriceDisplay: function(price) {
+            // Format total harga tanpa desimal (.00)
+            const formatted = new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(price);
+
+            document.getElementById('totalPriceDisplay').textContent = formatted;
+        },
+
+        clearSelection: function() {
+            this.selectedStartTime = null;
+            document.querySelectorAll('.time-slot.selected').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+
+            const display = document.getElementById('selectedTimeDisplay');
+            if (display) display.style.display = 'none';
+
+            document.getElementById('startTimeDisplay').textContent = '-';
+            document.getElementById('endTimeDisplay').textContent = '-';
+            document.getElementById('totalPriceDisplay').textContent = 'Rp 0';
+        },
+
+        handleImageUpload: function(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('imagePreview');
+            const fileInfo = document.getElementById('fileInfo');
+            const fileName = document.getElementById('fileName');
+            const uploadContainer = document.getElementById('fileUploadContainer');
+
+            if (!file) return;
+
+            // Hapus batasan ukuran file
+            if (!file.type.match('image.*')) {
+                alert('Hanya file gambar yang diperbolehkan');
+                return;
+            }
+
+            this.imageFile = file;
+
+            // Tampilkan preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            // Tampilkan info file
+            if (fileName) fileName.textContent = file.name;
+            if (fileInfo) fileInfo.style.display = 'block';
+            if (uploadContainer) uploadContainer.style.display = 'none';
+
+            this.updateSubmitButton();
+        },
+
+        removeImage: function() {
+            const input = document.getElementById('imagePayment');
+            const preview = document.getElementById('imagePreview');
+            const fileInfo = document.getElementById('fileInfo');
+            const uploadContainer = document.getElementById('fileUploadContainer');
+
+            if (input) input.value = '';
+            if (preview) {
+                preview.src = '';
+                preview.style.display = 'none';
+            }
+            if (fileInfo) fileInfo.style.display = 'none';
+            if (uploadContainer) uploadContainer.style.display = 'block';
+
+            this.imageFile = null;
+            this.updateSubmitButton();
+        },
+
+        updateSubmitButton: function() {
+            const submitBtn = document.getElementById('submitBtn');
+            if (!submitBtn) return;
+
+            const nameValid = document.getElementById('username')?.value.trim().length > 0;
+            const phoneValid = document.getElementById('handPhoneNumber')?.value.trim().length >= 10;
+            const timeSelected = !!this.selectedStartTime;
+            const termsAccepted = document.getElementById('termsCheck')?.checked;
+            const imageUploaded = !!this.imageFile;
+
+            submitBtn.disabled = !(nameValid && phoneValid && timeSelected && termsAccepted && imageUploaded);
+        },
+
+        handleSubmit: function(event) {
+            event.preventDefault();
+
+            if (!this.validateForm()) {
+                return false;
+            }
+
+            // Validasi tambahan
+            if (this.selectedStartTime && this.selectedDate) {
+                const slotTime = new Date(`${this.selectedDate}T${this.selectedStartTime}`);
+                const now = new Date();
+                const minTime = new Date(now.getTime() + 60 * 60 * 1000);
+
+                if (slotTime < minTime) {
+                    alert('Booking harus minimal 1 jam dari sekarang');
+                    return false;
+                }
+
+                // Validasi tidak melewati jam selesai
+                const [jam, menit] = this.jamSelesai.split(':');
+                const endTime = new Date(slotTime.getTime() + (this.selectedDuration * 60 * 60 * 1000));
+                const maxEnd = new Date(slotTime);
+                maxEnd.setHours(parseInt(jam), parseInt(menit), 0, 0);
+
+                if (endTime > maxEnd) {
+                    alert('Waktu booking melewati jam operasional lapangan');
+                    return false;
+                }
+
+                // Validasi maxWaktuBooking
+                if (this.selectedDuration > this.maxWaktuBooking) {
+                    alert(`Durasi booking maksimal ${this.maxWaktuBooking} jam`);
+                    return false;
+                }
+            }
+
+            // Tampilkan loading
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+                submitBtn.disabled = true;
+            }
+
+            event.target.submit();
+        },
+
+        validateForm: function() {
+            const phone = document.getElementById('handPhoneNumber')?.value.trim();
+            if (!phone || phone.length < 10) {
+                alert('Nomor WhatsApp minimal 10 digit');
+                return false;
+            }
+
+            if (!this.selectedStartTime) {
+                alert('Pilih waktu booking terlebih dahulu');
+                return false;
+            }
+
+            if (!this.imageFile) {
+                alert('Upload bukti pembayaran terlebih dahulu');
+                return false;
+            }
+
+            if (!document.getElementById('termsCheck')?.checked) {
+                alert('Setujui syarat dan ketentuan terlebih dahulu');
+                return false;
+            }
+
+            return true;
+        }
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        bookingManager.init();
+
+        // Form submit handler
+        const form = document.getElementById('bookingForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                bookingManager.handleSubmit(e);
+            });
+        }
+    });
+    /*]]>*/
+</script>
+</body>
+</html>

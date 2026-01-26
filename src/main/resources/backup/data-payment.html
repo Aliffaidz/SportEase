@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>ADMIN PANEL - Data Pembayaran</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ========== SIDEBAR STYLE ========== */
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            width: 250px;
+            transition: all 0.3s;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+        }
+        .sidebar.collapsed {
+            margin-left: -250px;
+        }
+        .sidebar .nav-link {
+            color: #ecf0f1;
+            padding: 15px 20px;
+            border-bottom: 1px solid #34495e;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #34495e;
+            color: #3498db;
+        }
+        .sidebar .nav-link.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .sidebar .sub-menu {
+            background-color: #34495e;
+            padding-left: 30px;
+        }
+        .sidebar .sub-menu .nav-link {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #2c3e50;
+        }
+        .sidebar .sub-menu .nav-link.active {
+            background-color: #2980b9;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            transition: all 0.3s;
+        }
+        .main-content.expanded {
+            margin-left: 0;
+        }
+        .table-header {
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 5px 5px 0 0;
+        }
+        .table-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .btn-action {
+            padding: 5px 10px;
+            font-size: 0.875rem;
+        }
+        /* HAPUS TOMBOL FLOATING */
+        /* .toggle-sidebar {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: #3498db;
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .toggle-sidebar:hover {
+            background: #2980b9;
+        } */
+        .navbar-custom {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            position: relative;
+        }
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #34495e;
+        }
+        .sidebar-header h4 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        .payment-img-preview {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #dee2e6;
+        }
+        .payment-img-preview:hover {
+            opacity: 0.8;
+        }
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+            background-color: #f8f9fa;
+        }
+        .modal-img-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .modal-img-container img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .compact-table td, .compact-table th {
+            padding: 8px 12px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .page-info {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-actions-left {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            justify-content: flex-start;
+            margin-top: 10px;
+        }
+        .form-text-small {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 3px;
+        }
+        .filter-title {
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        .search-summary {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .search-summary-item {
+            margin-right: 20px;
+            display: inline-block;
+        }
+        .search-summary-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .search-summary-value {
+            color: #3498db;
+        }
+
+        /* ========== TOGGLE MENU STYLE BARU ========== */
+        .menu-toggle-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+            margin-right: 15px;
+        }
+        .menu-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .navbar-title {
+            flex-grow: 1;
+        }
+
+        /* ========== DELETE FORM STYLE ========== */
+        .delete-form {
+            display: inline;
+        }
+        .btn-delete {
+            padding: 5px 10px;
+            font-size: 0.875rem;
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+        .btn-delete:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+        }
+        .btn-edit {
+            padding: 5px 10px;
+            font-size: 0.875rem;
+        }
+
+        /* ========== MODAL KONFIRMASI HAPUS ========== */
+        .modal-konfirmasi-hapus .modal-header {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-bottom: 1px solid #f5c6cb;
+        }
+        .modal-konfirmasi-hapus .modal-header .btn-close {
+            background-color: transparent;
+            border: none;
+            font-size: 1.2rem;
+        }
+        .hapus-payment-info {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .hapus-payment-info-item {
+            display: flex;
+            margin-bottom: 5px;
+        }
+        .hapus-payment-info-label {
+            font-weight: 600;
+            min-width: 120px;
+            color: #495057;
+        }
+        .hapus-payment-info-value {
+            color: #dc3545;
+        }
+
+        /* ========== RESPONSIVE STYLES ========== */
+        @media (max-width: 1200px) {
+            .filter-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            .sidebar.collapsed {
+                margin-left: -200px;
+            }
+            .main-content {
+                margin-left: 200px;
+                padding: 15px;
+            }
+            .main-content.expanded {
+                margin-left: 0;
+            }
+            /* HAPUS RESPONSIVE UNTUK TOMBOL FLOATING */
+            /* .toggle-sidebar {
+                top: 10px;
+                left: 10px;
+            } */
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-actions-left {
+                flex-direction: column;
+            }
+            .search-summary-item {
+                display: block;
+                margin-bottom: 5px;
+            }
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+            .btn-action {
+                font-size: 0.75rem;
+                padding: 4px 8px;
+            }
+            .navbar-custom {
+                padding: 8px 15px;
+            }
+            .header-left {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .menu-toggle-btn {
+                font-size: 1.3rem;
+                margin-right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- HAPUS TOMBOL TOGGLE FLOATING DARI SINI -->
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h4>ADMIN PANEL</h4>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/dashboard}">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/lapangan}">
+                        <i class="fas fa-table me-2"></i>Data Lapangan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/bookings}">
+                        <i class="fas fa-calendar-alt me-2"></i>Data Booking
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/fasilitas}">
+                        <i class="fas fa-list me-2"></i>Data Fasilitas
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/ketentuan}">
+                        <i class="fas fa-file-alt me-2"></i>Ketentuan Booking
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#pembayaranSubmenu" data-bs-toggle="collapse">
+                        <i class="fas fa-credit-card me-2"></i>Pembayaran
+                    </a>
+                    <div class="collapse show" id="pembayaranSubmenu">
+                        <ul class="nav flex-column sub-menu">
+                            <li class="nav-item">
+                                <a class="nav-link active" th:href="@{/admin/data-pembayaran}">
+                                    <i class="fas fa-money-bill-wave me-2"></i>Data Pembayaran
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/admin/metode-pembayaran}">
+                                    <i class="fas fa-university me-2"></i>Metode Pembayaran
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="nav-item has-submenu">
+                    <a class="nav-link" href="#notifikasiSubmenu" data-bs-toggle="collapse">
+                        <i class="fas fa-bell me-2"></i>Notifikasi
+                    </a>
+                    <div class="collapse" id="notifikasiSubmenu">
+                        <ul class="nav flex-column sub-menu">
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/admin/email-notification}">
+                                    <i class="fas fa-envelope me-2"></i>Email
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin/site-config}">
+                        <i class="fas fa-cog me-2"></i>Konfigurasi Situs
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Header dengan tombol toggle menu -->
+            <div class="navbar-custom d-flex align-items-center">
+                <button class="menu-toggle-btn" id="navbarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="navbar-title">
+                    <h2 class="mb-0">Data Pembayaran</h2>
+                </div>
+                <div class="page-info">
+                    <span th:if="${pagingDataPembayaran != null and pagingDataPembayaran.metadata != null}"
+                          th:text="'Total: ' + ${pagingDataPembayaran.metadata.totalElements} + ' data'">
+                    </span>
+                    <span th:if="${pagingDataPembayaran == null or pagingDataPembayaran.metadata == null}">
+                        Total: 0 data
+                    </span>
+                </div>
+            </div>
+
+            <!-- Notifikasi -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Ringkasan Pencarian -->
+            <div th:if="${param.pembayaran != null or param['field-name'] != null or param.username != null or
+                          param.handphone != null or param.tanggal != null or param.booking != null}"
+                 class="search-summary">
+                <div class="search-summary-item">
+                    <span class="search-summary-label">Filter Aktif:</span>
+                </div>
+                <div class="search-summary-item" th:if="${param.booking != null}">
+                    <span class="search-summary-label">ID Booking:</span>
+                    <span class="search-summary-value" th:text="${param.booking}"></span>
+                </div>
+                <div class="search-summary-item" th:if="${param.pembayaran != null}">
+                    <span class="search-summary-label">ID Pembayaran:</span>
+                    <span class="search-summary-value" th:text="${param.pembayaran}"></span>
+                </div>
+                <div class="search-summary-item" th:if="${param['field-name'] != null and param['field-name'] != ''}">
+                    <span class="search-summary-label">Nama Lapangan:</span>
+                    <span class="search-summary-value" th:text="${param['field-name']}"></span>
+                </div>
+                <div class="search-summary-item" th:if="${param.username != null and param.username != ''}">
+                    <span class="search-summary-label">Username:</span>
+                    <span class="search-summary-value" th:text="${param.username}"></span>
+                </div>
+                <div class="search-summary-item" th:if="${param.handphone != null}">
+                    <span class="search-summary-label">No. Handphone:</span>
+                    <span class="search-summary-value" th:text="${param.handphone}"></span>
+                </div>
+                <div class="search-summary-item" th:if="${param.tanggal != null}">
+                    <span class="search-summary-label">Tanggal:</span>
+                    <span class="search-summary-value" th:text="${param.tanggal}"></span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary float-end" onclick="resetFilter()">
+                    <i class="fas fa-times me-1"></i>Hapus Filter
+                </button>
+            </div>
+
+            <!-- Filter Section - TOMBOL DI SEBELAH KIRI -->
+            <div class="filter-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="filter-title mb-0">
+                        <i class="fas fa-filter me-2"></i>Filter Pembayaran
+                    </h5>
+                </div>
+
+                <form th:action="@{/admin/data-pembayaran}" method="get" id="filterForm" onsubmit="return handleFilterSubmit()">
+                    <div class="filter-grid">
+                        <!-- ID Booking -->
+                        <div class="filter-item">
+                            <label class="form-label fw-bold">ID Booking</label>
+                            <input type="number"
+                                   class="form-control"
+                                   name="booking"
+                                   id="booking"
+                                   th:value="${param.booking}"
+                                   min="1"
+                                   placeholder="Cari ID Booking">
+                            <div class="form-text-small">Kosongkan untuk semua booking</div>
+                        </div>
+
+                        <!-- ID Pembayaran -->
+                        <div class="filter-item">
+                            <label class="form-label fw-bold">ID Pembayaran</label>
+                            <input type="number"
+                                   class="form-control"
+                                   name="pembayaran"
+                                   id="pembayaran"
+                                   th:value="${param.pembayaran}"
+                                   min="1"
+                                   placeholder="Cari ID Pembayaran">
+                            <div class="form-text-small">Kosongkan untuk semua pembayaran</div>
+                        </div>
+
+                        <!-- NAMA LAPANGAN (DROPDOWN) -->
+                        <div class="filter-item">
+                            <label class="form-label fw-bold">Nama Lapangan</label>
+                            <select class="form-select" name="field-name" id="field-name-select">
+                                <option value="">Semua Lapangan</option>
+                                <option th:each="fieldName : ${fieldNames}"
+                                        th:value="${fieldName}"
+                                        th:text="${fieldName}"
+                                        th:selected="${param['field-name'] == fieldName}">
+                                </option>
+                            </select>
+                            <div class="form-text-small">Pilih nama lapangan</div>
+                        </div>
+
+                        <!-- Username -->
+                        <div class="filter-item">
+                            <label class="form-label fw-bold">Username</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="username"
+                                   id="username"
+                                   th:value="${param.username}"
+                                   placeholder="Nama pengguna">
+                            <div class="form-text-small">Kosongkan untuk semua username</div>
+                        </div>
+
+                        <!-- No. Handphone -->
+                        <div class="filter-item">
+                            <label class="form-label fw-bold">No. Handphone</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="handphone"
+                                   id="handphone"
+                                   th:value="${param.handphone}"
+                                   placeholder="Nomor telepon">
+                            <div class="form-text-small">Kosongkan untuk semua nomor</div>
+                        </div>
+
+                        <!-- Tanggal -->
+                        <div class="filter-item">
+                            <label class="form-label fw-bold">Tanggal</label>
+                            <input type="date"
+                                   class="form-control"
+                                   name="tanggal"
+                                   id="tanggal"
+                                   th:value="${param.tanggal}">
+                            <div class="form-text-small">Format: YYYY-MM-DD</div>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Aksi di sebelah kiri -->
+                    <div class="filter-actions-left">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Cari
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="resetFilter()">
+                            <i class="fas fa-redo me-2"></i>Reset
+                        </button>
+                    </div>
+
+                    <!-- Halaman sekarang (hidden) - diisi oleh script pagination -->
+                    <input type="hidden" name="page" id="pageInput" th:value="${param.page != null ? param.page : 0}">
+                </form>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-container">
+                <!-- Table Header -->
+                <div class="table-header d-flex justify-content-between align-items-center">
+                    <span>Tabel Data Pembayaran</span>
+                    <div class="d-flex align-items-center">
+                        <span class="me-2">Menampilkan data pembayaran</span>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 compact-table">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>No</th>
+                            <th>ID</th>
+                            <th>ID Booking</th>
+                            <th>Nama Lapangan</th>
+                            <th>Username</th>
+                            <th>No. Handphone</th>
+                            <th>Tanggal Booking</th>
+                            <th>Bukti Pembayaran</th>
+                            <th>Aksi</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Check if content exists and is not empty -->
+                        <tr th:if="${pagingDataPembayaran != null and pagingDataPembayaran.content != null and not #lists.isEmpty(pagingDataPembayaran.content)}"
+                            th:each="pembayaran, stat : ${pagingDataPembayaran.content}">
+                            <!-- Null-safe calculation -->
+                            <td th:text="${stat.index + 1 + (pagingDataPembayaran.metadata.number * pagingDataPembayaran.metadata.size)}"></td>
+                            <td>
+                                <strong th:text="${pembayaran.id}"></strong>
+                            </td>
+                            <td th:text="${pembayaran.idBooking}"></td>
+                            <td th:text="${pembayaran.fieldName}"></td>
+                            <td th:text="${pembayaran.username}"></td>
+                            <td th:text="${pembayaran.noHandphone}"></td>
+                            <td th:text="${pembayaran.tanggalBooking}"></td>
+                            <td>
+                                <div th:if="${pembayaran.gambar != null and pembayaran.gambar != ''}">
+                                    <img th:src="@{${'/' + #strings.replace(pembayaran.gambar, '\\', '/')}}"
+                                         class="payment-img-preview"
+                                         data-bs-toggle="modal"
+                                         data-bs-target="#modalGambar"
+                                         th:attr="data-img-src=@{${'/' + #strings.replace(pembayaran.gambar, '\\', '/')}}"
+                                         onerror="this.style.display='none'">
+                                </div>
+                                <div th:unless="${pembayaran.gambar != null and pembayaran.gambar != ''}" class="text-muted">
+                                    Tidak ada bukti
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1 flex-wrap">
+                                    <!-- Tombol Detail Gambar -->
+                                    <button th:if="${pembayaran.gambar != null and pembayaran.gambar != ''}"
+                                            type="button"
+                                            class="btn btn-info btn-sm btn-action"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalGambar"
+                                            th:attr="data-img-src=@{${'/' + #strings.replace(pembayaran.gambar, '\\', '/')}}">
+                                        <i class="fas fa-eye me-1"></i>Detail
+                                    </button>
+                                    <!-- Tombol Hapus -->
+                                    <button type="button"
+                                            class="btn btn-danger btn-sm btn-action"
+                                            th:attr="data-id=${pembayaran.id},
+                                                     data-id-booking=${pembayaran.idBooking},
+                                                     data-username=${pembayaran.username},
+                                                     data-field-name=${pembayaran.fieldName}"
+                                            onclick="konfirmasiHapusPayment(this)">
+                                        <i class="fas fa-trash me-1"></i>Hapus
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Jika tidak ada data -->
+                        <tr th:if="${pagingDataPembayaran == null or pagingDataPembayaran.content == null or #lists.isEmpty(pagingDataPembayaran.content)}">
+                            <td colspan="9" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-2x mb-3"></i><br>
+                                <span th:if="${param.pembayaran != null or param['field-name'] != null or param.username != null or
+                                              param.handphone != null or param.tanggal != null or param.booking != null}">
+                                    Tidak ada data pembayaran yang ditemukan dengan filter yang dipilih
+                                </span>
+                                <span th:if="${param.pembayaran == null and param['field-name'] == null and param.username == null and
+                                              param.handphone == null and param.tanggal == null and param.booking == null}">
+                                    Tidak ada data pembayaran yang tersedia
+                                </span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div th:if="${pagingDataPembayaran != null and pagingDataPembayaran.metadata != null and pagingDataPembayaran.metadata.totalPages > 0}"
+                     class="pagination-container">
+                    <div class="page-info">
+                        Menampilkan
+                        <span th:text="${(pagingDataPembayaran.metadata.number * pagingDataPembayaran.metadata.size) + 1}"></span>-
+                        <span th:text="${(pagingDataPembayaran.metadata.number + 1) * pagingDataPembayaran.metadata.size <= pagingDataPembayaran.metadata.totalElements ?
+                                        (pagingDataPembayaran.metadata.number + 1) * pagingDataPembayaran.metadata.size :
+                                        pagingDataPembayaran.metadata.totalElements}">
+                        </span>
+                        dari <span th:text="${pagingDataPembayaran.metadata.totalElements}"></span> data
+                    </div>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+                            <!-- First Page -->
+                            <li class="page-item" th:classappend="${pagingDataPembayaran.metadata.number == 0} ? 'disabled' : ''">
+                                <a class="page-link" href="#" th:onclick="|changePage(0)|">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <!-- Previous Page -->
+                            <li class="page-item" th:classappend="${pagingDataPembayaran.metadata.number == 0} ? 'disabled' : ''">
+                                <a class="page-link" href="#" th:onclick="|changePage(${pagingDataPembayaran.metadata.number - 1})|">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                            <!-- Page Numbers - simplified version -->
+                            <li th:each="i : ${#numbers.sequence(0, pagingDataPembayaran.metadata.totalPages - 1)}"
+                                class="page-item"
+                                th:classappend="${i == pagingDataPembayaran.metadata.number} ? 'active' : ''">
+                                <a class="page-link" href="#" th:onclick="|changePage(${i})|" th:text="${i + 1}"></a>
+                            </li>
+                            <!-- Next Page -->
+                            <li class="page-item" th:classappend="${pagingDataPembayaran.metadata.number == pagingDataPembayaran.metadata.totalPages - 1} ? 'disabled' : ''">
+                                <a class="page-link" href="#" th:onclick="|changePage(${pagingDataPembayaran.metadata.number + 1})|">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <!-- Last Page -->
+                            <li class="page-item" th:classappend="${pagingDataPembayaran.metadata.number == pagingDataPembayaran.metadata.totalPages - 1} ? 'disabled' : ''">
+                                <a class="page-link" href="#" th:onclick="|changePage(${pagingDataPembayaran.metadata.totalPages - 1})|">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal untuk melihat gambar -->
+<div class="modal fade" id="modalGambar" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-image me-2"></i>Detail Bukti Pembayaran
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-img-container">
+                    <img id="modalGambarImg" src="" alt="Bukti Pembayaran" class="img-fluid">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Tutup
+                </button>
+                <a id="downloadGambarLink" href="#" class="btn btn-primary" download>
+                    <i class="fas fa-download me-2"></i>Download
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus Pembayaran -->
+<div class="modal fade modal-konfirmasi-hapus" id="modalKonfirmasiHapusPayment" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Konfirmasi Hapus
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="fw-bold">Apakah Anda yakin ingin menghapus data pembayaran ini?</p>
+
+                <!-- Informasi Data yang Akan Dihapus -->
+                <div class="hapus-payment-info" id="hapus-payment-info">
+                    <div class="hapus-payment-info-item">
+                        <span class="hapus-payment-info-label">ID Pembayaran:</span>
+                        <span class="hapus-payment-info-value" id="hapus-payment-id"></span>
+                    </div>
+                    <div class="hapus-payment-info-item">
+                        <span class="hapus-payment-info-label">ID Booking:</span>
+                        <span class="hapus-payment-info-value" id="hapus-id-booking"></span>
+                    </div>
+                    <div class="hapus-payment-info-item">
+                        <span class="hapus-payment-info-label">Username:</span>
+                        <span class="hapus-payment-info-value" id="hapus-username"></span>
+                    </div>
+                    <div class="hapus-payment-info-item">
+                        <span class="hapus-payment-info-label">Lapangan:</span>
+                        <span class="hapus-payment-info-value" id="hapus-field-name"></span>
+                    </div>
+                </div>
+
+                <p class="text-muted small mt-3">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Data yang dihapus tidak dapat dikembalikan. Pastikan data ini tidak terhubung dengan transaksi lain.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Batal
+                </button>
+                <form id="formHapusPayment" method="post" style="display: inline;">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Hapus
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ========== TOGGLE SIDEBAR FUNCTION ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        const navbarToggle = document.getElementById('navbarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+
+        // Cek state sidebar dari localStorage
+        const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+
+        if (isSidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+            navbarToggle.querySelector('i').className = 'fas fa-bars';
+        } else {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('expanded');
+            navbarToggle.querySelector('i').className = 'fas fa-times';
+        }
+
+        // Toggle Sidebar dengan animasi
+        navbarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.className = 'fas fa-bars';
+                localStorage.setItem('sidebarCollapsed', 'true');
+            } else {
+                icon.className = 'fas fa-times';
+                localStorage.setItem('sidebarCollapsed', 'false');
+            }
+        });
+
+        // Handler untuk modal gambar
+        const modalGambar = document.getElementById('modalGambar');
+        if (modalGambar) {
+            modalGambar.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const imgSrc = button.getAttribute('data-img-src');
+                const modalImg = document.getElementById('modalGambarImg');
+                const downloadLink = document.getElementById('downloadGambarLink');
+
+                modalImg.src = imgSrc;
+                downloadLink.href = imgSrc;
+
+                // Set nama file untuk download
+                const fileName = imgSrc.split('/').pop();
+                downloadLink.download = fileName || 'bukti-pembayaran';
+            });
+        }
+
+        // Validasi filter tanggal tidak lebih dari hari ini
+        const tanggalInput = document.getElementById('tanggal');
+        if (tanggalInput) {
+            const today = new Date().toISOString().split('T')[0];
+            tanggalInput.max = today;
+        }
+
+        // Auto close alert setelah 5 detik
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+
+        // Reset form hapus ketika modal ditutup
+        document.getElementById('modalKonfirmasiHapusPayment').addEventListener('hidden.bs.modal', function () {
+            document.getElementById("hapus-payment-id").textContent = '';
+            document.getElementById("hapus-id-booking").textContent = '';
+            document.getElementById("hapus-username").textContent = '';
+            document.getElementById("hapus-field-name").textContent = '';
+        });
+    });
+
+    // ========== FUNGSI FILTER ==========
+    function handleFilterSubmit() {
+        // Simpan filter ke localStorage sebelum submit
+        saveFiltersToLocalStorage();
+        return true;
+    }
+
+    function resetFilter() {
+        // Reset semua input field
+        document.getElementById('pembayaran').value = '';
+        document.getElementById('field-name-select').value = '';
+        document.getElementById('username').value = '';
+        document.getElementById('handphone').value = '';
+        document.getElementById('tanggal').value = '';
+        document.getElementById('booking').value = '';
+        document.getElementById('pageInput').value = 0;
+
+        // Hapus filter dari localStorage
+        localStorage.removeItem('pembayaranFilters');
+
+        // Submit form untuk reload halaman tanpa filter
+        document.getElementById('filterForm').submit();
+    }
+
+    function changePage(page) {
+        // Simpan filter ke localStorage sebelum pindah halaman
+        saveFiltersToLocalStorage();
+        document.getElementById('pageInput').value = page;
+        document.getElementById('filterForm').submit();
+    }
+
+    // Fungsi untuk menyimpan filter ke localStorage
+    function saveFiltersToLocalStorage() {
+        const filters = {
+            pembayaran: document.getElementById('pembayaran').value,
+            fieldName: document.getElementById('field-name-select').value,
+            username: document.getElementById('username').value,
+            handphone: document.getElementById('handphone').value,
+            tanggal: document.getElementById('tanggal').value,
+            booking: document.getElementById('booking').value
+        };
+
+        localStorage.setItem('pembayaranFilters', JSON.stringify(filters));
+    }
+
+    // Fungsi untuk memulihkan filter dari localStorage
+    function restoreFiltersFromLocalStorage() {
+        const savedFilters = localStorage.getItem('pembayaranFilters');
+        if (savedFilters) {
+            const filters = JSON.parse(savedFilters);
+
+            // Hanya set nilai jika field kosong (tidak ada nilai dari server)
+            if (document.getElementById('pembayaran').value === '') {
+                document.getElementById('pembayaran').value = filters.pembayaran || '';
+            }
+            if (document.getElementById('field-name-select').value === '') {
+                document.getElementById('field-name-select').value = filters.fieldName || '';
+            }
+            if (document.getElementById('username').value === '') {
+                document.getElementById('username').value = filters.username || '';
+            }
+            if (document.getElementById('handphone').value === '') {
+                document.getElementById('handphone').value = filters.handphone || '';
+            }
+            if (document.getElementById('tanggal').value === '') {
+                document.getElementById('tanggal').value = filters.tanggal || '';
+            }
+            if (document.getElementById('booking').value === '') {
+                document.getElementById('booking').value = filters.booking || '';
+            }
+        }
+    }
+
+    // ========== FUNGSI DELETE PAYMENT ==========
+    function konfirmasiHapusPayment(btn) {
+        const id = btn.getAttribute('data-id');
+        const idBooking = btn.getAttribute('data-id-booking');
+        const username = btn.getAttribute('data-username');
+        const fieldName = btn.getAttribute('data-field-name');
+
+        // Isi informasi data yang akan dihapus
+        document.getElementById("hapus-payment-id").textContent = id || '-';
+        document.getElementById("hapus-id-booking").textContent = idBooking || '-';
+        document.getElementById("hapus-username").textContent = username || '-';
+        document.getElementById("hapus-field-name").textContent = fieldName || '-';
+
+        // Set action form untuk delete
+        const form = document.getElementById("formHapusPayment");
+        form.action = `/admin/data-pembayaran/${id}`;
+
+        // Tampilkan modal konfirmasi
+        const modal = new bootstrap.Modal(document.getElementById('modalKonfirmasiHapusPayment'));
+        modal.show();
+    }
+
+    // Function untuk preview gambar error handling
+    document.querySelectorAll('.payment-img-preview').forEach(img => {
+        img.addEventListener('error', function() {
+            this.style.display = 'none';
+            // Ganti dengan placeholder
+            const parent = this.parentElement;
+            parent.innerHTML = '<span class="text-muted">Gambar tidak ditemukan</span>';
+        });
+    });
+
+    // Enhanced Delete Form Submission
+    document.getElementById('formHapusPayment').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const form = this;
+        const url = form.action;
+        const formData = new FormData(form);
+
+        // Optional: Add loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Menghapus...';
+        submitBtn.disabled = true;
+
+        fetch(url, {
+            method: 'POST', // Spring Boot menggunakan POST dengan _method=DELETE
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Tutup modal dan refresh halaman
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalKonfirmasiHapusPayment'));
+                modal.hide();
+                window.location.reload();
+            } else {
+                alert('Gagal menghapus data pembayaran. Silakan coba lagi.');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan. Silakan coba lagi.');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+
+    // Pulihkan filter dari localStorage saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        restoreFiltersFromLocalStorage();
+
+        // Simpan filter ke localStorage saat user mengubah input
+        const filterInputs = [
+            'pembayaran',
+            'field-name-select',
+            'username',
+            'handphone',
+            'tanggal',
+            'booking'
+        ];
+
+        filterInputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('change', saveFiltersToLocalStorage);
+                input.addEventListener('input', saveFiltersToLocalStorage);
+            }
+        });
+    });
+
+    // ========== KEYBOARD SHORTCUTS ==========
+    document.addEventListener('keydown', function(e) {
+        // ESC key to close modals
+        if (e.key === 'Escape') {
+            const openModals = document.querySelectorAll('.modal.show');
+            if (openModals.length > 0) {
+                const modal = bootstrap.Modal.getInstance(openModals[0]);
+                if (modal) modal.hide();
+            }
+        }
+    });
+</script>
+</body>
+</html>
