@@ -1,13 +1,9 @@
 package app.entities;
-
-import app.dto.LapanganDtoDetail;
-import app.dto.admin.FasilitasDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 
 @Entity
 @Data
@@ -31,8 +27,8 @@ public class HomePage {
     @Column(name = "contact",nullable = false)
     private String contact;
 
-    @Column(name = "jam_opersional",nullable = false)
-    private String jamOperasional;
+    @Column(name = "operation_hours",nullable = false)
+    private String operationHours;
 
     @Embedded
     private SocialMedia socialMedia;

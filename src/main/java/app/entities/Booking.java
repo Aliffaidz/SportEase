@@ -1,7 +1,7 @@
 package app.entities;
 
-import app.entities.enums.StatusBoking;
-import app.entities.enums.StatusPembayaran;
+import app.entities.enums.BookingStatus;
+import app.entities.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,27 +22,27 @@ public class Booking {
     private String username;
 
     @Column(columnDefinition = "VARCHAR(100) NOT NULL")
-    private String handphone;
+    private String mobilePhoneNumber;
 
-    @Column(name = "waktu_mulai",nullable = false)
-    private LocalDateTime waktuMulai;
+    @Column(name = "start_time",nullable = false)
+    private LocalDateTime startTime;
 
-    @Column(name = "waktu_selesai",nullable = false)
-    private LocalDateTime waktuSelesai;
+    @Column(name = "ended_time",nullable = false)
+    private LocalDateTime endedTime;
 
     @Column(nullable = false)
-    private BigDecimal harga;
+    private BigDecimal price;
 
-    @Column(name = "status_booking",nullable = false)
+    @Column(name = "booking_status",nullable = false)
     @Enumerated(value = EnumType.STRING)
-    private StatusBoking statusBooking;
+    private BookingStatus bookingStatus;
 
-    @Column(name = "status_pembayaran",nullable = false)
+    @Column(name = "payment_status",nullable = false)
     @Enumerated(value = EnumType.STRING)
-    private StatusPembayaran statusPembayaran;
+    private PaymentStatus paymentStatus;
 
     @ManyToOne
-    @JoinColumn(name = "id_lapangan",referencedColumnName = "id")
-    private Lapangan lapangan;
+    @JoinColumn(name = "id_field",referencedColumnName = "id")
+    private Field field;
 
 }
