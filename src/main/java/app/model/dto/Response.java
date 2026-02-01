@@ -1,7 +1,9 @@
-package app.model.response;
+package app.model.dto;
 
 import lombok.Builder;
+import lombok.Data;
 
+@Data
 @Builder
 public class Response <T>{
 

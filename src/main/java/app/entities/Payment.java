@@ -16,12 +16,9 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "id_booking")
-    private Integer idBooking;
-
-    @ManyToOne
-    @JoinColumn(name = "id_field", referencedColumnName = "id")
-    private Field field;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_booking",referencedColumnName = "id",nullable = false)
+    private Booking booking;
 
     @Column(name = "username",nullable = false)
     private String username;

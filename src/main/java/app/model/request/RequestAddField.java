@@ -1,6 +1,7 @@
 package app.model.request;
 import app.entities.enums.FieldStatus;
 import app.entities.enums.FieldType;
+import app.exceptions.NotAfter;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +23,7 @@ public record RequestAddField(
         LocalTime startTime,
 
         @NotNull(message = "waktu operasional selesai lapangan tidak boleh kosong")
+        @NotAfter(value = "23:00",message = "maximal waktu selesai adalah 23:00")
         LocalTime endedTime,
 
         @NotNull(message = "tipe lapangan tidak boleh kosong")

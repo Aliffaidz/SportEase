@@ -17,7 +17,7 @@ public class ImagesField extends ImageData {
     @Id
     private String id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "field",referencedColumnName = "id")
     private Field field;
 

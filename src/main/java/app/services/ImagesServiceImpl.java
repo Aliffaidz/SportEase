@@ -1,8 +1,10 @@
 package app.services;
 import app.entities.*;
-import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.sql.Delete;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -12,7 +14,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class SaveImagesServiceImpl implements SaveImageToLocal, SaveImageToDatabase<ImageData> {
+@Component
+@Slf4j
+public class ImagesServiceImpl implements SaveImageToLocal, SaveImageToDatabase<ImageData>, DeleteImageToLocal<ImageData> {
 
     @Value("${application.image-locator}")
     private String IMAGE_FIELD_LOCATION;
@@ -22,9 +26,12 @@ public class SaveImagesServiceImpl implements SaveImageToLocal, SaveImageToDatab
         isValidImage(images);
         List<String> imageLocation = new ArrayList<>();
         for (MultipartFile current : images){
-            String generateImageName = UUID.randomUUID().toString() + current.getOriginalFilename().lastIndexOf(".");
+            int getImageFormat = current.getOriginalFilename().lastIndexOf(".");
+            String generateImageName = UUID.randomUUID() + current.getOriginalFilename().substring(getImageFormat);
+            log.info("SaveImagesServieImpl image name generated " + generateImageName);
             Path location = Path.of(IMAGE_FIELD_LOCATION);
             Path imageName = location.resolve(generateImageName);
+            log.info("SaveImagesServieImpl image final name " + imageName);
             imageLocation.add(imageName.toString());
             try{
                 try(OutputStream outputStream = Files.newOutputStream(imageName)){
@@ -39,9 +46,9 @@ public class SaveImagesServiceImpl implements SaveImageToLocal, SaveImageToDatab
     }
 
     @Override
-    public List<ImageData> saveDb(List<String> images, Object object){
+    public List<ImageData> saveDb(List<String> imagesPath, Object object){
         List<ImageData> imageDataList = new ArrayList<>();
-        for (String imageName : images){
+        for (String imageName : imagesPath){
             if(object instanceof Field){
                 ImagesField imageField = new ImagesField();
                 imageField.setId(imageName);
@@ -60,6 +67,20 @@ public class SaveImagesServiceImpl implements SaveImageToLocal, SaveImageToDatab
             }
         }
         return imageDataList;
+    }
+
+    @Override
+    public void deleteLocalImage(List<? extends ImageData> images) {
+        List<String> ids = images.stream().map(ImageData::getId).toList();
+        for (String currentImagePath :  ids) {
+            try {
+                log.info("imageService deleteLocalImage id " + currentImagePath);
+                Path path = Path.of(currentImagePath);
+                Files.deleteIfExists(path);
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "there some problem");
+            }
+        }
     }
 
     private void isValidImage(List<MultipartFile> image){

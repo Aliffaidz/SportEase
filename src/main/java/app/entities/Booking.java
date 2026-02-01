@@ -6,7 +6,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Data
 @Entity
@@ -25,10 +27,13 @@ public class Booking {
     private String mobilePhoneNumber;
 
     @Column(name = "start_time",nullable = false)
-    private LocalDateTime startTime;
+    private LocalTime startTime;
 
     @Column(name = "ended_time",nullable = false)
-    private LocalDateTime endedTime;
+    private LocalTime endedTime;
+
+    @Column(name = "date",nullable = false)
+    private LocalDate date;
 
     @Column(nullable = false)
     private BigDecimal price;
@@ -41,8 +46,13 @@ public class Booking {
     @Enumerated(value = EnumType.STRING)
     private PaymentStatus paymentStatus;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_field",referencedColumnName = "id")
     private Field field;
+
+    @OneToOne(mappedBy = "booking")
+    private Payment payment;
+
+
 
 }

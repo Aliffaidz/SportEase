@@ -51,15 +51,11 @@ public class Field {
     private Integer maximumBookingHours;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "field",fetch = FetchType.EAGER)
-    private List<Payment> payments;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "field",fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "field",fetch = FetchType.LAZY)
     private List<Booking> bookings;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "field",fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "field",fetch = FetchType.LAZY)
     private List<ImagesField> imagesFieldList;
 
 }
