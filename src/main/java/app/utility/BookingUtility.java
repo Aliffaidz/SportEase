@@ -16,8 +16,6 @@ public class BookingUtility {
         if(start.isBefore(field.getOperationHours().getStartTime()) || ended.isAfter(field.getOperationHours().getEndedTime()) || start.equals(ended)) {
             return false;
         }
-        // validasi waktu booking harus 1 jam sebelum mulai
-        // validasi waktu mulai harus sebelum waktu selesai
         return !start.isAfter(ended);
     }
 

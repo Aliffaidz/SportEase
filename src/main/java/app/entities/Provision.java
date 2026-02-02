@@ -1,5 +1,6 @@
 package app.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,5 +19,9 @@ public class Provision {
     @Lob
     @Column(nullable = false)
     private String provision;
+
+    public Provision(String provision){
+        this.provision = provision;
+    }
 
 }

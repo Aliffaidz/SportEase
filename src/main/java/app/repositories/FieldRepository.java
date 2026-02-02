@@ -16,4 +16,7 @@ public interface FieldRepository extends JpaRepository<Field,Integer> {
     @Query("SELECT f FROM Field f JOIN f.imagesFieldList i WHERE f.id = :fieldId")
     Optional<Field> getFieldById(@Param("fieldId")Integer fieldId);
 
+    @Query("SELECT f FROM Field f WHERE f.id = :idField")
+    Optional<Field> getOperationalHour(@Param("idField")Integer idField);
+
 }

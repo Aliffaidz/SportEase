@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@Entity(name = "rekening_pembayaran")
+@Entity(name = "payment_methods")
 @AllArgsConstructor
 public class PaymentMethod {
 

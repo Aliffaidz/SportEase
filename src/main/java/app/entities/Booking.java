@@ -38,6 +38,9 @@ public class Booking {
     @Column(nullable = false)
     private BigDecimal price;
 
+    @Column(name = "image_payment_verification")
+    private String imagePayment;
+
     @Column(name = "booking_status",nullable = false)
     @Enumerated(value = EnumType.STRING)
     private BookingStatus bookingStatus;
@@ -50,8 +53,6 @@ public class Booking {
     @JoinColumn(name = "id_field",referencedColumnName = "id")
     private Field field;
 
-    @OneToOne(mappedBy = "booking")
-    private Payment payment;
 
 
 

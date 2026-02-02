@@ -59,11 +59,6 @@ public class ImagesServiceImpl implements SaveImageToLocal, SaveImageToDatabase<
                 imageFacility.setId(imageName);
                 imageFacility.setFacility((Facility) object);
                 imageDataList.add(imageFacility);
-            } else if (object instanceof Payment) {
-                ImagePaymentVerification imagePaymentVerification = new ImagePaymentVerification();
-                imagePaymentVerification.setId(imageName);
-                imagePaymentVerification.setIdPayment((Payment) object);
-                imageDataList.add(imagePaymentVerification);
             }
         }
         return imageDataList;
