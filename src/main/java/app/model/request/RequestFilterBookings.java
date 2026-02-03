@@ -16,6 +16,6 @@ public class RequestFilterBookings {
     private BookingStatus status;
     private PaymentStatus payment;
     private String fieldName;
-    private int page;
+    private Integer page;
 
 }

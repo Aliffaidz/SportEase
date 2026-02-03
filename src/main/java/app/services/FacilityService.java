@@ -104,6 +104,7 @@ public class FacilityService {
         );
 
         List<ImageFacility> facilityImages = imageFacilityRepository.findAllByFacility(facility);
+        saveImagesService.deleteLocalImage(facilityImages);
         imageFacilityRepository.deleteAll(facilityImages);
         facilityRepository.delete(facility);
         log.info("service deleteFacility response");
@@ -112,6 +113,5 @@ public class FacilityService {
                 .data("success delete facility")
                 .build();
     }
-
 
 }

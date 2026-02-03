@@ -2,10 +2,13 @@ package app.services;
 
 import app.entities.Booking;
 import app.entities.Field;
+import app.entities.PaymentMethod;
+import app.entities.Provision;
 import app.entities.enums.BookingStatus;
 import app.entities.enums.PaymentStatus;
 import app.model.dto.*;
 import app.model.request.RequestBookingField;
+import app.model.request.RequestEditBooking;
 import app.model.request.RequestFilterBookings;
 import app.repositories.BookingRepository;
 import app.repositories.FieldRepository;
@@ -20,6 +23,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -32,13 +37,17 @@ public class BookingService {
     private final BookingUtility bookingUtility;
     private final FieldRepository fieldRepository;
     private final ImagesServiceImpl imagesService;
+    private final ProvisionService provisionService;
+    private final PaymentMethodService paymentMethodService;
 
 
-    public BookingService(BookingRepository bookingRepository, BookingUtility bookingUtility, FieldRepository fieldRepository, ImagesServiceImpl imagesService){
+    public BookingService(BookingRepository bookingRepository, BookingUtility bookingUtility, FieldRepository fieldRepository, ImagesServiceImpl imagesService, ProvisionService provisionService, PaymentMethodService paymentMethodService){
         this.bookingRepository = bookingRepository;
         this.bookingUtility = bookingUtility;
         this.fieldRepository = fieldRepository;
         this.imagesService = imagesService;
+        this.provisionService = provisionService;
+        this.paymentMethodService = paymentMethodService;
     }
 
     public Response<String> bookingField(RequestBookingField requestBookingField, List<MultipartFile> image , Integer idField){
@@ -47,7 +56,8 @@ public class BookingService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND,"field with id " + idField + " not found !!!")
         );
         try{
-            if(bookingUtility.isValidDate(requestBookingField.getDate(),field) && bookingUtility.isValidTime(requestBookingField.getStart(),requestBookingField.getEnded(),field) && bookingUtility.isValidPrice(requestBookingField.getStart(),requestBookingField.getEnded(),requestBookingField.getPrice(),field)){
+            boolean isOverlap = bookingRepository.isBookingOverlap(idField, requestBookingField.getDate(), requestBookingField.getStart(), requestBookingField.getEnded());
+            if(bookingUtility.isValidDate(requestBookingField.getDate(),field) && bookingUtility.isValidTime(requestBookingField.getStart(),requestBookingField.getEnded(),field) && bookingUtility.isValidPrice(requestBookingField.getStart(),requestBookingField.getEnded(),requestBookingField.getPrice(),field) && !isOverlap){
                 Booking booking = new Booking();
                 booking.setUsername(requestBookingField.getName());
                 booking.setMobilePhoneNumber(requestBookingField.getPhoneNumber());
@@ -132,6 +142,7 @@ public class BookingService {
                 .build();
     }
 
+    // pr di paging ingat semalam
     public ResponsePagingData<List<BookingDto>> getAllBookings(RequestFilterBookings filterBookings){
         log.info("booking service getAllBookings");
         Pageable page = PageRequest.of(filterBookings.getPage(),10);
@@ -217,8 +228,79 @@ public class BookingService {
                 .build();
     }
 
-    // change booking status
-    // change booking payment status
+    public Response<BookingFormData> getBookingInformation(Integer idField){
+        Field field = fieldRepository.findById(idField).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND,"field with id " + idField + " not found !!!")
+        );
+
+        BookingFormData data = new BookingFormData();
+
+        data.setIdField(field.getId());
+        data.setFieldName(field.getFieldName());
+        data.setHourlyPrice(field.getHourlyPrice());
+        data.setMaximumBookingTime(field.getMaximumBookingHours());
+        data.setRangeBookingDate(field.getOperationDate());
+        Response<List<Provision>> provisions = provisionService.getAllProvisions();
+        Response<List<PaymentMethod>> paymentMethods = paymentMethodService.getAllPaymentMethods();
+        data.setPaymentMethods(paymentMethods.getData());
+        data.setProvisions(provisions.getData());
+        LocalDate now = LocalDate.now();
+        AvailableBookingSlots slots = getAvailableSlots(now,field.getId()).getData();
+        slots.setDate(now);
+        data.setAvailableBookingSlots(slots);
+        return Response.<BookingFormData>builder()
+                .messages("success")
+                .data(data)
+                .build();
+    }
+
+    public Response<String> changePaymentStatus(Integer id, PaymentStatus status){
+        Booking booking = bookingRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND,"booking tidak ditemukan")
+        );
+
+        if(status.equals(PaymentStatus.SUDAH_BAYAR)){
+            booking.setPaymentStatus(PaymentStatus.SUDAH_BAYAR);
+        }else{
+            booking.setBookingStatus(BookingStatus.CANCEL);
+        }
+        return Response.<String>builder()
+                .messages("success")
+                .data("success change status " + status)
+                .build();
+    }
+
+    public Response<String> changeBookingTime(Integer id, RequestEditBooking data){
+
+        Booking booking = bookingRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND,"booking with id " + id + " not found !!!")
+        );
+
+        Field field = booking.getField();
+
+        boolean validDate = true;
+        boolean validTime = true;
+        boolean validPrice = false;
+
+        if(data.getDate() != null){
+            validDate = bookingUtility.isValidDate(data.getDate(),field);
+        } else if (data.getStart() != null && data.getEnded() != null) {
+            validTime = bookingUtility.isValidTime(data.getStart(),data.getEnded(),field);
+            validPrice = bookingUtility.isValidPrice(data.getStart(),data.getEnded(),data.getPrice(),field);
+        }
+        boolean bookingOverlap = bookingRepository.isBookingOverlap(field.getId(), data.getDate(), data.getStart(), data.getEnded());
+        if(validDate && validTime && validPrice && !bookingOverlap){
+            return Response.<String>builder()
+                    .messages("success")
+                    .data("success modify booking")
+                    .build();
+        }
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"gagal memperbarui booking");
+    }
+
+
+
+
 
 
 }

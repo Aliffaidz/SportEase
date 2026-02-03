@@ -1,7 +1,6 @@
-package app.services;
+package app.services.interfaces;
 
 import app.entities.ImageData;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 

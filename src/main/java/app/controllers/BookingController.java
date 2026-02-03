@@ -1,10 +1,9 @@
 package app.controllers;
 
-import app.model.dto.AvailableBookingSlots;
-import app.model.dto.BookingDto;
-import app.model.dto.Response;
-import app.model.dto.ResponsePagingData;
+import app.entities.enums.PaymentStatus;
+import app.model.dto.*;
 import app.model.request.RequestBookingField;
+import app.model.request.RequestEditBooking;
 import app.model.request.RequestFilterBookings;
 import app.services.BookingService;
 import jakarta.validation.Valid;
@@ -33,33 +32,35 @@ public class BookingController {
     public Response<String> bookingField(
             @RequestPart(name = "data") @Valid  RequestBookingField requestBookingField,
             @RequestPart(name = "image") List<MultipartFile> image,
-            @PathVariable(name = "id") Integer idField
-    )
-    {
+            @PathVariable(name = "id") Integer idField) {
         return bookingService.bookingField(requestBookingField,image,idField);
     }
 
-    @GetMapping(
-            path = "/{id}/booking-slots",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public Response<AvailableBookingSlots> getAvailableBookingSlots(
-            @PathVariable(name = "id") Integer idField,
-            @RequestParam(name = "date") LocalDate date
-            )
-    {
+    @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Response<BookingFormData> getFormInformation(@PathVariable(name = "id") Integer idField) {
+        return bookingService.getBookingInformation(idField);
+    }
+
+    @GetMapping(path = "/{id}/booking-slots", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Response<AvailableBookingSlots> getAvailableBookingSlots(@PathVariable(name = "id") Integer idField, @RequestParam(name = "date") LocalDate date){
         return bookingService.getAvailableSlots(date,idField);
     }
 
-    @GetMapping(
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponsePagingData<List<BookingDto>> getBookingsByFilters(@ModelAttribute RequestFilterBookings filterBookings){
-        if(filterBookings.getId() == null){
+        if(filterBookings.getPage() == null){
             filterBookings.setPage(0);
         }
         return bookingService.getAllBookings(filterBookings);
     }
 
+    @PatchMapping(path = "/{id}/payment")
+    public Response<String> editPaymentBooking(@PathVariable(name = "id") Integer id, @RequestParam(name = "status")PaymentStatus status){
+        return bookingService.changePaymentStatus(id,status);
+    }
 
+    @PatchMapping(path = "/{id}/edit")
+    public Response<String> editBookingTime(@PathVariable(name = "id") Integer id, @ModelAttribute RequestEditBooking booking){
+        return bookingService.changeBookingTime(id,booking);
+    }
 }

@@ -39,6 +39,7 @@ public class FieldController {
         return fieldService.getAllFields();
     }
 
+
     @PatchMapping(
             path = "/{id}",
             produces = MediaType.APPLICATION_JSON_VALUE,
