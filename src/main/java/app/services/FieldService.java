@@ -7,6 +7,7 @@ import app.entities.Field;
 import app.entities.ImagesField;
 import app.entities.OperationalHours;
 import app.model.dto.AdminFieldDto;
+import app.model.dto.FieldDetailDto;
 import app.model.request.RequestAddField;
 import app.model.request.RequestUpdateField;
 import app.model.dto.Response;
@@ -153,6 +154,26 @@ public class FieldService {
                 .build();
     }
 
+    public Response<FieldDetailDto> getDetailField(Integer idField){
 
+        Field field = fieldRepository.findById(idField).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND,"field with id " + idField + " not found !!!")
+        );
 
+        FieldDetailDto detailField = new FieldDetailDto();
+
+        detailField.setId(field.getId());
+        detailField.setFieldName(field.getFieldName());
+        detailField.setHourlyPrice(field.getHourlyPrice());
+        detailField.setFieldType(field.getFieldType());
+        detailField.setDescription(field.getDescription());
+        detailField.setLocation(field.getLocation());
+        detailField.setMaximumBookingHours(field.getMaximumBookingHours());
+        detailField.setOperationDate(field.getOperationDate());
+        detailField.setOperationalHours(field.getOperationHours());
+        return Response.<FieldDetailDto>builder()
+                .messages("success")
+                .data(detailField)
+                .build();
+    }
 }

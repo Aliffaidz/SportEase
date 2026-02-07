@@ -27,6 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 @Slf4j
@@ -67,7 +68,7 @@ public class BookingService {
                 booking.setStartTime(requestBookingField.getStart());
                 booking.setEndedTime(requestBookingField.getEnded());
                 booking.setDate(requestBookingField.getDate());
-                booking.setPaymentStatus(PaymentStatus.BELUM_BAYAR);
+                booking.setPaymentStatus(PaymentStatus.MENUNGGU_KONFIRMASI);
                 List<String> img = imagesService.saveToLocal(image);
                 booking.setImagePayment(img.getFirst());
                 bookingRepository.save(booking);
@@ -297,6 +298,19 @@ public class BookingService {
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"gagal memperbarui booking");
     }
+
+    private BookingSummaryDashboard getChartCard(LocalDate start, LocalDate end, String fieldName){
+        BookingSummaryDashboard summaryDashboard;
+        if(fieldName != null && !fieldName.isBlank()){
+            summaryDashboard = bookingRepository.getSummaryWithFieldName(start,end,fieldName);
+        }
+    }
+
+/*    public DashboardChartWeek getChartWeek(LocalDate start,LocalDate end){
+
+
+    }*/
+
 
 
 

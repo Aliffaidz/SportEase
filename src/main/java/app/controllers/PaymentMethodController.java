@@ -21,7 +21,7 @@ public class PaymentMethodController {
         this.paymentMethodService = paymentMethodService;
     }
 
-    //add
+
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -29,7 +29,7 @@ public class PaymentMethodController {
     public Response<String> addPaymentMethod(@RequestBody @Valid RequestAddPaymentMethod method){
         return paymentMethodService.addPaymentMethod(method);
     }
-    //getall
+
 
     @GetMapping(
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -37,10 +37,10 @@ public class PaymentMethodController {
     public Response<List<PaymentMethod>> getAllPaymentMethods(){
         return paymentMethodService.getAllPaymentMethods();
     }
-    //update
+
 
     @PatchMapping(
-            path = "/{id}",
+            path = "/{id}/edit",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -49,12 +49,12 @@ public class PaymentMethodController {
     }
 
     @DeleteMapping(
-            path = "/{id}",
+            path = "/{id}/delete",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public Response<String> deletePaymentMethod(@PathVariable(name = "id") String id){
         return paymentMethodService.deletePaymentMethod(id);
     }
-    //delete
+
 
 }

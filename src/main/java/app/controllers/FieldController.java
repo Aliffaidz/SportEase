@@ -1,6 +1,7 @@
 package app.controllers;
 
 import app.model.dto.AdminFieldDto;
+import app.model.dto.FieldDetailDto;
 import app.model.request.RequestAddField;
 import app.model.request.RequestUpdateField;
 import app.model.dto.Response;
@@ -61,5 +62,10 @@ public class FieldController {
     public Response<String> deleteField(@PathVariable(name = "id") Integer id){
         log.info("controller deleteField");
         return fieldService.deleteField(id);
+    }
+
+    @GetMapping(path = "/{id}/detail")
+    public Response<FieldDetailDto> getDetailField(@PathVariable(name = "id") Integer id){
+        return fieldService.getDetailField(id);
     }
 }

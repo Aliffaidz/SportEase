@@ -13,7 +13,7 @@ public interface FieldRepository extends JpaRepository<Field,Integer> {
     @Query("SELECT f FROM Field f LEFT JOIN FETCH f.imagesFieldList")
     List<Field> findAllFieldsWithImages();
 
-    @Query("SELECT f FROM Field f JOIN f.imagesFieldList i WHERE f.id = :fieldId")
+    @Query("SELECT f FROM Field f JOIN f.imagesFieldList i WHERE f.id = :fieldId AND f.fieldStatus = 'AVAILABLE'")
     Optional<Field> getFieldById(@Param("fieldId")Integer fieldId);
 
     @Query("SELECT f FROM Field f WHERE f.id = :idField")

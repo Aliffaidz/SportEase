@@ -25,7 +25,7 @@ public class BookingController {
     }
 
     @PostMapping(
-            path = "/{id}",
+            path = "/{id}/booking",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -63,4 +63,11 @@ public class BookingController {
     public Response<String> editBookingTime(@PathVariable(name = "id") Integer id, @ModelAttribute RequestEditBooking booking){
         return bookingService.changeBookingTime(id,booking);
     }
+
+    @GetMapping(path = "/dashboard")
+    public Response<BookingSummaryDashboard> getSummaryDashboard(@RequestParam(name = "date1",required = false)LocalDate start, @RequestParam(name = "date2",required = false) LocalDate end) {
+        return bookingService.getChartCard(start, end);
+    }
+
+
 }
