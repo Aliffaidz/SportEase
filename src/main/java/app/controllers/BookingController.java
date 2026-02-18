@@ -7,7 +7,9 @@ import app.model.request.RequestEditBooking;
 import app.model.request.RequestFilterBookings;
 import app.services.BookingService;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -64,10 +66,30 @@ public class BookingController {
         return bookingService.changeBookingTime(id,booking);
     }
 
-    @GetMapping(path = "/dashboard")
-    public Response<BookingSummaryDashboard> getSummaryDashboard(@RequestParam(name = "date1",required = false)LocalDate start, @RequestParam(name = "date2",required = false) LocalDate end) {
-        return bookingService.getChartCard(start, end);
+    @GetMapping("/dashboard")
+    public Response<DashboardResponse> getDashboard(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam(required = false) String fieldName,
+            @RequestParam(defaultValue = "WEEKLY") String mode) {
+
+        LocalDate finalStart = start;
+        LocalDate finalEnd = end;
+
+        if (finalStart == null) {
+            if ("WEEKLY".equalsIgnoreCase(mode)) {
+                // Default ke hari Senin minggu ini
+                finalStart = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
+                finalEnd = finalStart.plusDays(6);
+            } else if ("MONTHLY".equalsIgnoreCase(mode)) {
+                // Default ke tanggal 1 bulan ini
+                finalStart = LocalDate.now().with(java.time.temporal.TemporalAdjusters.firstDayOfMonth());
+                finalEnd = finalStart.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth());
+            } else {
+                finalStart = LocalDate.now();
+                finalEnd = LocalDate.now();
+            }
+        }
+        return bookingService.getDashboardData(start,end,fieldName,mode);
     }
-
-
 }

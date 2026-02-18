@@ -28,8 +28,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 public class BookingService {
@@ -301,20 +306,72 @@ public class BookingService {
 
     private BookingSummaryDashboard getChartCard(LocalDate start, LocalDate end, String fieldName){
         BookingSummaryDashboard summaryDashboard;
-        if(fieldName != null && !fieldName.isBlank()){
-            summaryDashboard = bookingRepository.getSummaryWithFieldName(start,end,fieldName);
+        boolean isExistName = fieldName != null && !fieldName.isBlank();
+        if(isExistName){
+            if(start != null && end != null){
+                return bookingRepository.getSummaryWithFieldName(start,end,fieldName);
+            }else {
+                return bookingRepository.getTodaySummaryField(LocalDate.now(),fieldName);
+            }
+        }else {
+            if(start != null && end != null){
+                return bookingRepository.getSummaryAllField(start,end);
+            }else{
+                return bookingRepository.getTodaySummaryAllField(LocalDate.now());
+            }
         }
     }
 
-/*    public DashboardChartWeek getChartWeek(LocalDate start,LocalDate end){
+    public Response<DashboardResponse> getDashboardData(LocalDate start, LocalDate end, String fieldName, String mode) {
+        // 1. Tentukan rentang waktu (Default hari ini jika null)
+        LocalDate finalStart = (start != null) ? start : LocalDate.now();
+        LocalDate finalEnd = (end != null) ? end : LocalDate.now();
 
+        // 2. Ambil Data Card (Menggunakan logika method Anda yang sudah ada)
+        BookingSummaryDashboard summary = getChartCard(start, end, fieldName);
 
-    }*/
+        // 3. Hitung Kapasitas Maksimal (Ambil dari DB)
+        List<Field> targetFields = (fieldName != null && !fieldName.isBlank())
+                ? fieldRepository.findAllByFieldName(fieldName)
+                : fieldRepository.findAll();
 
+        int dailyCapacity = targetFields.stream()
+                .mapToInt(f -> f.getOperationHours().getEndedTime().getHour() - f.getOperationHours().getStartTime().getHour())
+                .sum();
 
+        // 4. Ambil Data Booking per Tanggal untuk Grafik
+        // Kita gunakan range start dan end yang sama dengan Card agar data sinkron
+        List<Object[]> bookingData = bookingRepository.getBookingCountByDate(finalStart, finalEnd, fieldName);
+        Map<LocalDate, Long> bookingMap = bookingData.stream()
+                .collect(Collectors.toMap(r -> (LocalDate) r[0], r -> (Long) r[1]));
 
+        // 5. Olah Data Grafik berdasarkan Mode (WEEKLY/MONTHLY)
+        List<ChartDataDetail> charts = new ArrayList<>();
+        if ("WEEKLY".equalsIgnoreCase(mode)) {
+            for (int i = 0; i < 7; i++) {
+                LocalDate date = finalStart.plusDays(i);
+                long count = bookingMap.getOrDefault(date, 0L);
+                double pct = (dailyCapacity == 0) ? 0 : (count / (double) dailyCapacity) * 100;
+                charts.add(new ChartDataDetail(date.getDayOfWeek().name(), Math.min(pct, 100.0)));
+            }
+        } else {
+            // Logika bulanan (4 perulangan minggu)
+            for (int i = 0; i < 4; i++) {
+                LocalDate wStart = finalStart.plusWeeks(i);
+                LocalDate wEnd = wStart.plusDays(6);
+                long wCount = bookingMap.entrySet().stream()
+                        .filter(e -> !e.getKey().isBefore(wStart) && !e.getKey().isAfter(wEnd))
+                        .mapToLong(Map.Entry::getValue).sum();
+                double wPct = (dailyCapacity * 7 == 0) ? 0 : (wCount / (double) (dailyCapacity * 7)) * 100;
+                charts.add(new ChartDataDetail("Minggu " + (i + 1), Math.min(wPct, 100.0)));
+            }
+        }
 
-
+        return Response.<DashboardResponse>builder()
+                .messages("success")
+                .data(new DashboardResponse(summary,charts,mode))
+                .build();
+    }
 
 
 }

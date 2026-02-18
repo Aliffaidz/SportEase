@@ -85,6 +85,41 @@ public interface BookingRepository extends JpaRepository<Booking,Integer>, JpaSp
     BookingSummaryDashboard getTodaySummaryField(@Param("startDate") LocalDate startDate, @Param("fieldName") String fieldName);
 
 
+    @Query("""
+        SELECT DAYOFWEEK(b.date) as dayIndex, COUNT(b) as total
+        FROM Booking b
+        WHERE b.date BETWEEN :start AND :end
+        AND (:fieldName IS NULL OR b.field.fieldName = :fieldName)
+        GROUP BY DAYOFWEEK(b.date)
+    """)
+    List<Object[]> getDailyBookingCount(@Param("start") LocalDate start,
+                                        @Param("end") LocalDate end,
+                                        @Param("fieldName") String fieldName);
+
+    // Query untuk mendapatkan jumlah booking per minggu dalam rentang bulan tertentu
+    @Query("""
+        SELECT WEEK(b.date) as weekIndex, COUNT(b) as total
+        FROM Booking b
+        WHERE b.date BETWEEN :start AND :end
+        AND (:fieldName IS NULL OR b.field.fieldName = :fieldName)
+        GROUP BY WEEK(b.date)
+    """)
+    List<Object[]> getWeeklyBookingCount(@Param("start") LocalDate start,
+                                         @Param("end") LocalDate end,
+                                         @Param("fieldName") String fieldName);
+
+
+    @Query("""
+    SELECT b.date, COUNT(b)
+    FROM Booking b
+    WHERE b.date BETWEEN :start AND :end
+    AND (:fieldName IS NULL OR b.field.fieldName = :fieldName)
+    AND b.bookingStatus != 'CANCEL'
+    GROUP BY b.date
+""")
+    List<Object[]> getBookingCountByDate(@Param("start") LocalDate start,
+                                         @Param("end") LocalDate end,
+                                         @Param("fieldName") String fieldName);
 
 
 

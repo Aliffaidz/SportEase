@@ -19,4 +19,7 @@ public interface FieldRepository extends JpaRepository<Field,Integer> {
     @Query("SELECT f FROM Field f WHERE f.id = :idField")
     Optional<Field> getOperationalHour(@Param("idField")Integer idField);
 
+    List<Field> findAllByFieldName(String fieldName);
+    Field findFieldByFieldName(String name);
+
 }
